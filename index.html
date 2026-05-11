@@ -8,26 +8,23 @@
         .sidebar { width: 220px; background: #252526; border-right: 1px solid #333; padding: 10px; display: flex; flex-direction: column; }
         .sidebar-title { color: #6d6d6d; font-weight: bold; margin-bottom: 12px; font-size: 11px; letter-spacing: 1px; }
         .file-tree { padding-left: 5px; }
-        .file { padding: 3px 0; cursor: pointer; display: flex; align-items: center; }
-        .file.active { background: #37373d; color: #fff; margin-left: -10px; padding-left: 20px; width: calc(100% + 10px); }
+        .file.active { background: #37373d; color: #fff; padding: 5px 10px; margin-left: -10px; width: calc(100% + 10px); }
         .editor { flex-grow: 1; display: flex; flex-direction: column; background: #1e1e1e; }
         .tabs { background: #2d2d2d; display: flex; height: 35px; align-items: center; }
-        .tab { padding: 0 20px; background: #2d2d2d; color: #969696; height: 100%; display: flex; align-items: center; border-right: 1px solid #252526; font-size: 12px; }
-        .tab.active { background: #1e1e1e; color: #fff; border-top: 1px solid #007acc; }
+        .tab { padding: 0 20px; background: #1e1e1e; color: #fff; border-top: 1px solid #007acc; height: 100%; display: flex; align-items: center; font-size: 12px; }
         .code-area { padding: 20px 40px; line-height: 1.6; overflow-y: auto; }
         .syntax-purple { color: #c586c0; }
         .syntax-blue { color: #569cd6; }
-        .syntax-orange { color: #ce9178; }
         .grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin: 20px 0; }
-        .word { border: 1px solid #3c3c3c; padding: 15px 10px; text-align: left; cursor: pointer; color: #ce9178; transition: background 0.2s; border-left: 3px solid transparent; }
+        .word { border: 1px solid #3c3c3c; padding: 15px 10px; cursor: pointer; color: #ce9178; border-left: 3px solid transparent; }
         .word:hover { background: #2a2d2e; }
         
         /* États visuels */
         .agent { color: #6a9955 !important; font-style: italic; border-color: #6a9955 !important; background: rgba(106, 153, 85, 0.1); pointer-events: none; }
-        .civil { background: rgba(128, 128, 128, 0.15); opacity: 0.8; } /* Gris léger, reste cliquable */
+        .civil { opacity: 0.4; text-decoration: line-through; border-color: #333 !important; }
         .assassin { color: #f44747 !important; font-weight: bold; border-color: #f44747 !important; background: rgba(244, 71, 71, 0.2); pointer-events: none; }
         
-        /* Indices (Liserés) - Toujours prioritaires tant que pas Agent/Assassin */
+        /* Indices */
         .hint-green { border-left: 3px solid #6a9955 !important; }
         .hint-black { border-left: 3px solid #f44747 !important; }
     </style>
@@ -37,15 +34,15 @@
         <div class="sidebar-title">EXPLORER</div>
         <div class="file-tree">
             <div class="syntax-blue">▼ src</div>
-            <div class="file active" style="padding-left: 15px;">&nbsp; word_matrix.json</div>
+            <div class="file active">word_matrix.json</div>
         </div>
     </div>
     <div class="editor">
-        <div class="tabs"><div class="tab active">word_matrix.json</div></div>
+        <div class="tabs"><div class="tab">word_matrix.json</div></div>
         <div class="code-area">
-            <span class="syntax-purple">export</span> <span class="syntax-blue">const</span> get_nodes = () => {<br>
-            &nbsp;&nbsp;[<div class="grid" id="board">Initialisation du débogage...</div>]<br>
-            };
+            <span class="syntax-purple">export</span> <span class="syntax-blue">const</span> nodes = [
+            <div class="grid" id="board"></div>
+            ];
         </div>
     </div>
 
@@ -58,7 +55,6 @@
         function startApp() {
             const SUPABASE_URL = 'https://ftvxmlxdovbgcxdayzvn.supabase.co'; 
             const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ0dnhtbHhkb3ZiZ2N4ZGF5enZuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg0NzgwNDcsImV4cCI6MjA5NDA1NDA0N30.IOHBBGzED0FV1xRYKOMsJapjACpeX2JVEhfNgXXT4B8'; 
-
             const mySupabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
             const urlParams = new URLSearchParams(window.location.search);
             const myRole = urlParams.get('role') || 'A'; 
@@ -75,30 +71,34 @@
                     div.className = 'word';
                     div.innerText = `"${item.word}",`;
 
-                    // 1. Appliquer les indices (Toujours visibles sauf si le mot est "Agent" ou "Assassin")
-                    if (item.status !== 'agent' && item.status !== 'assassin') {
+                    // Déterminer le statut actuel pour CE joueur
+                    const myStatus = (myRole === 'A') ? item.status_a : item.status_b;
+                    
+                    // 1. Si le mot est trouvé par n'importe qui (Agent ou Assassin)
+                    if (item.status_a === 'agent' || item.status_b === 'agent') div.classList.add('agent');
+                    else if (item.status_a === 'assassin' || item.status_b === 'assassin') div.classList.add('assassin');
+                    
+                    // 2. Si c'est une erreur INDIVIDUELLE (Civil)
+                    else if (myStatus === 'civil') div.classList.add('civil');
+
+                    // 3. Afficher les indices si le mot n'est pas "fini"
+                    if (!div.classList.contains('agent') && !div.classList.contains('assassin')) {
                         const myView = (myRole === 'A') ? item.role_a_view : item.role_b_view;
                         if (myView === 'green') div.classList.add('hint-green');
                         if (myView === 'black') div.classList.add('hint-black');
                     }
 
-                    // 2. Appliquer le statut actuel (Couleur de fond / opacité)
-                    if (item.status !== 'neutral') {
-                        div.classList.add(item.status);
-                    }
-
-                    // 3. Gestion du clic
                     div.onclick = async () => {
-                        // On ne clique pas sur un mot déjà trouvé ou un assassin
-                        if (item.status === 'agent' || item.status === 'assassin') return;
+                        if (div.classList.contains('agent') || div.classList.contains('assassin')) return;
 
                         const otherView = (myRole === 'A') ? item.role_b_view : item.role_a_view;
-                        
-                        let nextStatus = 'civil'; 
-                        if (otherView === 'green') nextStatus = 'agent';
-                        if (otherView === 'black') nextStatus = 'assassin';
+                        let resultStatus = 'civil'; 
+                        if (otherView === 'green') resultStatus = 'agent';
+                        if (otherView === 'black') resultStatus = 'assassin';
 
-                        await mySupabase.from('game_state').update({ status: nextStatus }).eq('id', item.id);
+                        // On ne met à jour que la colonne du joueur actuel
+                        const updateData = (myRole === 'A') ? { status_a: resultStatus } : { status_b: resultStatus };
+                        await mySupabase.from('game_state').update(updateData).eq('id', item.id);
                         loadGame(); 
                     };
                     board.appendChild(div);
