@@ -13,31 +13,34 @@
         
         .code-area { flex-grow: 1; padding: 20px 40px; overflow-y: auto; background: #1e1e1e; }
         .grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin: 20px 0; }
-        .word { border: 1px solid #3c3c3c; padding: 15px 10px; cursor: pointer; color: #ce9178; border-left: 3px solid transparent; }
+        .word { border: 1px solid #3c3c3c; padding: 15px 10px; cursor: pointer; color: #ce9178; border-left: 3px solid transparent; text-transform: uppercase; font-weight: bold; }
         .word:hover { background: #2a2d2e; }
 
         .terminal-panel { height: 220px; background: #1e1e1e; border-top: 1px solid #333; display: flex; flex-direction: column; }
         .terminal-tabs { background: #1e1e1e; display: flex; padding: 0 20px; gap: 20px; height: 30px; align-items: center; border-bottom: 1px solid #2d2d2d; }
         .terminal-tab { font-size: 11px; color: #858585; text-transform: uppercase; }
         .terminal-tab.active { color: #fff; border-bottom: 1px solid #fff; }
-        .terminal-content { flex-grow: 1; padding: 10px 20px; overflow-y: auto; }
+        .terminal-content { flex-grow: 1; padding: 10px 20px; overflow-y: auto; display: flex; flex-direction: column; }
         
         .history-log { font-size: 11px; margin-bottom: 4px; border-bottom: 1px solid #252526; padding-bottom: 2px; }
-        .hist-agent { color: #6a9955; font-weight: bold; }
-        .hist-civil { color: #808080; text-decoration: line-through; }
-        .hist-assassin { color: #f44747; font-weight: bold; }
+        .hist-agent { color: #6a9955; font-weight: bold; padding: 0 4px; }
+        .hist-civil { color: #808080; text-decoration: line-through; padding: 0 4px; }
+        .hist-assassin { color: #f44747; font-weight: bold; padding: 0 4px; }
 
         .deploy-btn { background: #007acc; color: white; border: none; padding: 4px 12px; font-size: 11px; cursor: pointer; border-radius: 2px; }
         .new-game-btn { background: #6a9955; margin-right: 10px; }
-        .deploy-btn:disabled { background: #3e3e42; color: #858585; }
+        .deploy-btn:disabled { background: #3e3e42; color: #858585; cursor: not-allowed; }
 
+        /* États des cartes */
         .agent { color: #6a9955 !important; font-style: italic; border-color: #6a9955 !important; background: rgba(106, 153, 85, 0.1); pointer-events: none; }
-        .civil { opacity: 0.4; text-decoration: line-through; border-color: #333 !important; }
+        .civil { opacity: 0.4; text-decoration: line-through; border-color: #333 !important; cursor: default; }
         .assassin { color: #f44747 !important; font-weight: bold; border-color: #f44747 !important; background: rgba(244, 71, 71, 0.4) !important; pointer-events: none; }
+        
+        /* Indices liserés */
         .hint-green { border-left: 3px solid #6a9955 !important; }
         .hint-black { border-left: 3px solid #f44747 !important; }
-        .not-your-turn { opacity: 0.5; pointer-events: none; filter: grayscale(0.5); }
         
+        .not-your-turn { opacity: 0.5; pointer-events: none; filter: grayscale(0.4); }
         .status-bar { background: #007acc; color: white; padding: 2px 10px; font-size: 11px; height: 22px; display: flex; justify-content: space-between; align-items: center; }
         .status-bar.error { background: #f44747; }
     </style>
@@ -57,17 +60,17 @@
             <button id="endTurnBtn" class="deploy-btn">DEPLOY: COMMIT_CHANGES</button>
         </div>
         <div class="code-area">
-            <div class="grid" id="board">...</div>
+            <div class="grid" id="board">... SYSTEM_STARTUP ...</div>
         </div>
         <div class="terminal-panel">
             <div class="terminal-tabs"><div class="terminal-tab active">Terminal</div></div>
             <div class="terminal-content">
-                <div id="clueHistory"></div>
-                <div style="display:flex; gap:10px; margin-top:10px; align-items:center;">
+                <div id="clueHistory" style="flex-grow: 1; overflow-y: auto;"></div>
+                <div style="display:flex; gap:10px; margin-top:10px; align-items:center; border-top: 1px solid #333; padding-top: 5px;">
                     <span>antoine@master:~$ ./push --val</span>
-                    <input type="text" id="clueText" style="background:transparent; border:none; color:#ce9178; outline:none; width:150px;" placeholder='"..."'>
+                    <input type="text" id="clueText" style="background:transparent; border:none; color:#ce9178; outline:none; width:150px;" placeholder='"string"'>
                     <span>--n</span>
-                    <input type="number" id="clueNum" style="background:transparent; border:none; color:#ce9178; width:30px;" value="1">
+                    <input type="number" id="clueNum" style="background:transparent; border:none; color:#ce9178; width:35px;" value="1" min="1" max="8">
                     <button id="sendClueBtn" class="deploy-btn" style="background:#333;">EXECUTE</button>
                 </div>
             </div>
@@ -91,40 +94,46 @@
             const myRole = (new URLSearchParams(window.location.search).get('role') || 'A').toUpperCase();
 
             async function startNewGame() {
-                const { data: bank } = await mySupabase.from('word_bank').select('word');
-                const shuffled = bank.sort(() => 0.5 - Math.random()).slice(0, 25);
-                
-                const roles = Array(25).fill(null).map(() => ({ a: 'neutral', b: 'neutral' }));
-                const indices = [...Array(25).keys()].sort(() => 0.5 - Math.random());
-                
-                indices.slice(0, 3).forEach(i => { roles[i].a = 'green'; roles[i].b = 'green'; }); 
-                indices.slice(3, 9).forEach(i => { roles[i].a = 'green'; }); 
-                indices.slice(9, 15).forEach(i => { roles[i].b = 'green'; }); 
-                roles[indices[15]].a = 'black'; roles[indices[16]].b = 'black'; 
-                roles[indices[17]].a = 'black'; roles[indices[17]].b = 'black'; 
+                try {
+                    const { data: bank } = await mySupabase.from('word_bank').select('word');
+                    const shuffled = bank.sort(() => 0.5 - Math.random()).slice(0, 25);
+                    
+                    const roles = Array(25).fill(null).map(() => ({ a: 'neutral', b: 'neutral' }));
+                    const indices = [...Array(25).keys()].sort(() => 0.5 - Math.random());
+                    
+                    indices.slice(0, 3).forEach(i => { roles[i].a = 'green'; roles[i].b = 'green'; }); 
+                    indices.slice(3, 9).forEach(i => { roles[i].a = 'green'; }); 
+                    indices.slice(9, 15).forEach(i => { roles[i].b = 'green'; }); 
+                    roles[indices[15]].a = 'black'; roles[indices[16]].b = 'black'; 
+                    roles[indices[17]].a = 'black'; roles[indices[17]].b = 'black'; 
 
-                const newBoard = shuffled.map((w, i) => ({
-                    word: w.word, role_a_view: roles[i].a, role_b_view: roles[i].b,
-                    status_a: 'neutral', status_b: 'neutral'
-                }));
+                    const newBoard = shuffled.map((w, i) => ({
+                        word: w.word, role_a_view: roles[i].a, role_b_view: roles[i].b,
+                        status_a: 'neutral', status_b: 'neutral'
+                    }));
 
-                await mySupabase.from('game_state').delete().neq('id', 0);
-                await mySupabase.from('game_state').insert(newBoard);
-                await mySupabase.from('game_hints').delete().neq('id', 0);
-                await mySupabase.from('game_control').update({ current_turn: 'A' }).eq('id', 1);
-                location.reload();
+                    await mySupabase.from('game_state').delete().neq('id', 0);
+                    await mySupabase.from('game_state').insert(newBoard);
+                    await mySupabase.from('game_hints').delete().neq('id', 0);
+                    await mySupabase.from('game_control').update({ current_turn: 'A' }).eq('id', 1);
+                    location.reload();
+                } catch (e) { alert("Error initializing Kernel. Check Console."); }
             }
 
             document.getElementById('newGameBtn').onclick = startNewGame;
+
             document.getElementById('sendClueBtn').onclick = async () => {
                 const text = document.getElementById('clueText').value;
                 const num = document.getElementById('clueNum').value;
                 if(text) await mySupabase.from('game_hints').insert([{ clue_text: text, clue_number: num, sent_by: myRole }]);
                 document.getElementById('clueText').value = '';
+                loadGame();
             };
+
             document.getElementById('endTurnBtn').onclick = async () => {
                 const next = (myRole === 'A') ? 'B' : 'A';
                 await mySupabase.from('game_control').update({ current_turn: next }).eq('id', 1);
+                loadGame();
             };
 
             async function loadGame() {
@@ -136,13 +145,14 @@
 
                 const isGameOver = words.some(w => w.status_a === 'assassin' || w.status_b === 'assassin');
                 const allFound = words.filter(w => w.status_a === 'agent' || w.status_b === 'agent').length >= 15;
-                
+                const isMyTurn = ctrl.current_turn === myRole;
+
                 document.getElementById('newGameBtn').style.display = (isGameOver || allFound) ? 'inline-block' : 'none';
                 document.getElementById('statusBar').className = isGameOver ? "status-bar error" : "status-bar";
-                document.getElementById('turnIndicator').innerText = isGameOver ? "TERMINATED" : (allFound ? "SUCCESS" : `ACTIVE: ${ctrl.current_turn}`);
+                document.getElementById('turnIndicator').innerText = isGameOver ? "CORE_DUMPED" : (allFound ? "DEPLOYED_SUCCESS" : `ACTIVE: ROLE_${ctrl.current_turn}`);
                 
                 const board = document.getElementById('board');
-                board.className = (ctrl.current_turn === myRole && !isGameOver) ? "grid" : "grid not-your-turn";
+                board.className = (isMyTurn && !isGameOver) ? "grid" : "grid not-your-turn";
                 board.innerHTML = '';
                 
                 words.forEach(item => {
@@ -155,12 +165,14 @@
                     else if(item.status_a === 'agent' || item.status_b === 'agent') div.classList.add('agent');
                     else if(statusMe === 'civil') div.classList.add('civil');
                     
+                    const viewMe = (myRole === 'A') ? item.role_a_view : item.role_b_view;
                     if(!div.classList.contains('agent') && !div.classList.contains('assassin')){
-                        const viewMe = (myRole === 'A') ? item.role_a_view : item.role_b_view;
                         if(viewMe === 'green') div.classList.add('hint-green');
                         if(viewMe === 'black') div.classList.add('hint-black');
                     }
+
                     div.onclick = async () => {
+                        if(!isMyTurn || isGameOver || div.classList.contains('agent') || div.classList.contains('assassin')) return;
                         const otherView = (myRole === 'A') ? item.role_b_view : item.role_a_view;
                         let res = 'civil';
                         if(otherView === 'green') res = 'agent';
@@ -179,7 +191,10 @@
 
                 const hist = document.getElementById('clueHistory');
                 hist.innerHTML = hints ? hints.map(h => {
-                    const wordsArr = h.revealed_words ? h.revealed_words.split(',').map(w => `<span class="hist-${w.split(':')[1]}">${w.split(':')[0]}</span>`).join(' ') : '';
+                    const wordsArr = h.revealed_words ? h.revealed_words.split(',').map(w => {
+                        const [txt, stat] = w.split(':');
+                        return `<span class="hist-${stat}">${txt}</span>`;
+                    }).join(' ') : '...';
                     return `<div class="history-log">ROLE_${h.sent_by}: ${h.clue_text} (${h.clue_number}) -> ${wordsArr}</div>`;
                 }).join('') : '';
                 hist.scrollTop = hist.scrollHeight;
