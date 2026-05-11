@@ -21,9 +21,13 @@
         .grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin: 20px 0; }
         .word { border: 1px solid #3c3c3c; padding: 15px 10px; text-align: left; cursor: pointer; color: #ce9178; transition: background 0.2s; border-left: 3px solid transparent; }
         .word:hover { background: #2a2d2e; }
-        .agent { color: #6a9955 !important; font-style: italic; border-color: #6a9955 !important; background: rgba(106, 153, 85, 0.05); }
-        .civil { color: #808080 !important; opacity: 0.4; border-color: #333 !important; text-decoration: line-through; }
-        .assassin { color: #f44747 !important; font-weight: bold; border-color: #f44747 !important; background: rgba(244, 71, 71, 0.1); }
+        
+        /* États visuels */
+        .agent { color: #6a9955 !important; font-style: italic; border-color: #6a9955 !important; background: rgba(106, 153, 85, 0.1); pointer-events: none; }
+        .civil { background: rgba(128, 128, 128, 0.15); opacity: 0.8; } /* Gris léger, reste cliquable */
+        .assassin { color: #f44747 !important; font-weight: bold; border-color: #f44747 !important; background: rgba(244, 71, 71, 0.2); pointer-events: none; }
+        
+        /* Indices (Liserés) - Toujours prioritaires tant que pas Agent/Assassin */
         .hint-green { border-left: 3px solid #6a9955 !important; }
         .hint-black { border-left: 3px solid #f44747 !important; }
     </style>
@@ -33,27 +37,22 @@
         <div class="sidebar-title">EXPLORER</div>
         <div class="file-tree">
             <div class="syntax-blue">▼ src</div>
-            <div class="file" style="padding-left: 15px;">&nbsp; main.cpp</div>
             <div class="file active" style="padding-left: 15px;">&nbsp; word_matrix.json</div>
         </div>
     </div>
     <div class="editor">
-        <div class="tabs"><div class="tab active">word_matrix.json</div><div class="tab">main.cpp</div></div>
+        <div class="tabs"><div class="tab active">word_matrix.json</div></div>
         <div class="code-area">
             <span class="syntax-purple">export</span> <span class="syntax-blue">const</span> get_nodes = () => {<br>
-            &nbsp;&nbsp;[<div class="grid" id="board">Chargement du système...</div>]<br>
+            &nbsp;&nbsp;[<div class="grid" id="board">Initialisation du débogage...</div>]<br>
             };
         </div>
     </div>
 
     <script>
-        // INJECTION DYNAMIQUE DE SUPABASE
         const script = document.createElement('script');
         script.src = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2";
-        script.onload = () => {
-            console.log("Supabase chargé avec succès.");
-            startApp();
-        };
+        script.onload = () => startApp();
         document.head.appendChild(script);
 
         function startApp() {
@@ -76,17 +75,25 @@
                     div.className = 'word';
                     div.innerText = `"${item.word}",`;
 
-                    if (item.status !== 'neutral') {
-                        div.classList.add(item.status);
-                    } else {
+                    // 1. Appliquer les indices (Toujours visibles sauf si le mot est "Agent" ou "Assassin")
+                    if (item.status !== 'agent' && item.status !== 'assassin') {
                         const myView = (myRole === 'A') ? item.role_a_view : item.role_b_view;
                         if (myView === 'green') div.classList.add('hint-green');
                         if (myView === 'black') div.classList.add('hint-black');
                     }
 
+                    // 2. Appliquer le statut actuel (Couleur de fond / opacité)
+                    if (item.status !== 'neutral') {
+                        div.classList.add(item.status);
+                    }
+
+                    // 3. Gestion du clic
                     div.onclick = async () => {
-                        if (item.status !== 'neutral') return;
+                        // On ne clique pas sur un mot déjà trouvé ou un assassin
+                        if (item.status === 'agent' || item.status === 'assassin') return;
+
                         const otherView = (myRole === 'A') ? item.role_b_view : item.role_a_view;
+                        
                         let nextStatus = 'civil'; 
                         if (otherView === 'green') nextStatus = 'agent';
                         if (otherView === 'black') nextStatus = 'assassin';
