@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Visual Studio Code - word_matrix.json</title>
+    <!-- Chargement prioritaire de Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root {
@@ -19,7 +20,6 @@
             --syntax-keyword: #c586c0;
             --syntax-comment: #6a9955;
             --icon-grey: #858585;
-            /* Couleurs Terminal Historique */
             --term-agent: #6a9955;
             --term-civil: #808080;
             --term-assassin: #f44747;
@@ -27,7 +27,6 @@
 
         body { background: var(--bg-darker); color: var(--text-main); font-family: 'Segoe UI', sans-serif; margin: 0; display: flex; flex-direction: column; height: 100vh; font-size: 13px; overflow: hidden; }
 
-        /* TOP BAR */
         .top-menu { background: var(--bg-darker); height: 35px; display: flex; align-items: center; padding: 0; flex-shrink: 0; }
         .menu-items { display: flex; gap: 12px; padding: 0 10px; font-size: 12px; color: #bbb; width: 240px; }
         .search-container { flex-grow: 1; display: flex; align-items: center; justify-content: center; gap: 10px; }
@@ -36,18 +35,17 @@
         .win-btn { width: 45px; display: flex; align-items: center; justify-content: center; cursor: default; }
         .win-btn:hover { background: #333; }
 
-        /* LAYOUT */
         .layout-middle { display: flex; flex-grow: 1; overflow: hidden; }
         .activity-bar { width: 48px; background: var(--bg-activity); display: flex; flex-direction: column; align-items: center; padding: 10px 0; gap: 15px; border-right: 1px solid var(--border); flex-shrink: 0; }
         .act-icon { width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--icon-grey); }
         .act-icon.active { color: #fff; border-left: 2px solid #fff; }
 
         .sidebar { width: 260px; background: var(--bg-sidebar); display: flex; flex-direction: column; flex-shrink: 0; border-right: 1px solid var(--border); }
+        .sidebar-header { padding: 10px 20px; font-size: 11px; color: #bbbbbb; text-transform: uppercase; font-weight: bold; }
         .file-tree { padding: 5px 0; color: #cccccc; overflow-y: auto; flex-grow: 1; }
         .tree-item { display: flex; align-items: center; padding: 3px 15px; cursor: pointer; gap: 6px; }
         .tree-item.active { background: #37373d; color: #fff; }
 
-        /* EDITOR JSON */
         .main-content { flex-grow: 1; display: flex; flex-direction: column; background: var(--bg-main); overflow: hidden; }
         .tabs { background: var(--bg-sidebar); display: flex; height: 35px; align-items: center; flex-shrink: 0; }
         .tab { padding: 0 12px; background: var(--bg-sidebar); color: #969696; border-right: 1px solid var(--bg-darker); height: 100%; display: flex; align-items: center; gap: 8px; font-size: 12px; }
@@ -61,7 +59,6 @@
         .key { color: var(--syntax-key); }
         .val { color: var(--syntax-string); }
         
-        /* ÉTATS DU JEU */
         .agent .val { color: var(--syntax-comment) !important; font-style: italic; }
         .agent::after { content: " // OK_SYNC"; color: var(--syntax-comment); font-size: 11px; }
         .civil { opacity: 0.3; }
@@ -69,7 +66,6 @@
         .assassin .val { color: #f44747 !important; font-weight: bold; }
         .assassin::after { content: " // FATAL_ERROR"; color: #f44747; font-size: 11px; }
 
-        /* TERMINAL NOIR RÉALISTE */
         .terminal-panel { height: 220px; background: var(--bg-terminal); border-top: 1px solid var(--border); display: flex; flex-direction: column; }
         .terminal-tabs { background: var(--bg-main); display: flex; padding: 0 20px; gap: 20px; height: 30px; align-items: center; border-bottom: 1px solid #2d2d2d; font-size: 11px; color: #858585; }
         .terminal-tab.active { color: #fff; border-bottom: 1px solid #fff; }
@@ -108,9 +104,9 @@
 
     <div class="layout-middle">
         <div class="activity-bar">
-            <div class="act-icon active"><svg viewBox="0 0 24 24" width="24" fill="currentColor"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg></div>
-            <div class="act-icon"><svg viewBox="0 0 24 24" width="24" fill="currentColor"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg></div>
-            <div class="act-icon" style="margin-top: auto;"><svg viewBox="0 0 24 24" width="24" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg></div>
+            <div class="act-icon active">📄</div>
+            <div class="act-icon">🔍</div>
+            <div class="act-icon" style="margin-top: auto;">👤</div>
         </div>
 
         <div class="sidebar">
@@ -118,7 +114,6 @@
             <div class="file-tree">
                 <div class="tree-item"><span style="color:#e37933">⌄</span> src</div>
                 <div class="tree-item active" style="padding-left:30px;"><span style="color:#cbcb41">{}</span> word_matrix.json</div>
-                <div class="tree-item" style="padding-left:30px;"><span style="color:#519aba">TS</span> hardware.ts</div>
             </div>
         </div>
 
@@ -127,7 +122,7 @@
                 <div class="tab">hardware.ts</div>
                 <div class="tab active">word_matrix.json</div>
                 <div style="margin-left: auto; padding-right: 15px; display: flex; align-items: center;">
-                    <button id="newGameBtn" class="deploy-btn" style="background:#4a7a3c; display:none; margin-right: 10px;">REINIT_CORE</button>
+                    <button id="newGameBtn" class="deploy-btn" style="background:#4a7a3c; display:none; margin-right: 10px;">INITIALIZE_CORE</button>
                     <button id="endTurnBtn" class="deploy-btn">PUSH_CHANGES</button>
                 </div>
             </div>
@@ -141,8 +136,6 @@
             <div class="terminal-panel">
                 <div class="terminal-tabs">
                     <div class="terminal-tab active">TERMINAL</div>
-                    <div class="terminal-tab">DEBUG CONSOLE</div>
-                    <div class="terminal-tab">OUTPUT</div>
                 </div>
                 <div class="terminal-content">
                     <div id="clueHistory" style="overflow-y: auto; flex-grow: 1;"></div>
@@ -165,14 +158,17 @@
     </div>
 
     <script>
+        // Configuration Supabase
         const SUPABASE_URL = 'https://ftvxmlxdovbgcxdayzvn.supabase.co'; 
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ0dnhtbHhkb3ZiZ2N4ZGF5enZuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg0NzgwNDcsImV4cCI6MjA5NDA1NDA0N30.IOHBBGzED0FV1xRYKOMsJapjACpeX2JVEhfNgXXT4B8'; 
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ0dnhtbHhkb3ZiZ2N4ZGF5enZvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg0NzgwNDcsImV4cCI6MjA5NDA1NDA0N30.IOHBBGzED0FV1xRYKOMsJapjACpeX2JVEhfNgXXT4B8'; 
+        
         const mySupabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
         const myRole = (new URLSearchParams(window.location.search).get('role') || 'A').toUpperCase();
 
         async function startNewGame() {
             try {
                 const { data: bank } = await mySupabase.from('word_bank').select('word');
+                if (!bank || bank.length < 25) { alert("Banque de mots insuffisante !"); return; }
                 const shuffled = bank.sort(() => 0.5 - Math.random()).slice(0, 25);
                 const roles = Array(25).fill(null).map(() => ({ a: 'neutral', b: 'neutral' }));
                 const idx = [...Array(25).keys()].sort(() => 0.5 - Math.random());
@@ -181,6 +177,7 @@
                 idx.slice(9, 15).forEach(i => roles[i].b='green');
                 roles[idx[15]].a='black'; roles[idx[16]].b='black'; roles[idx[17]].a='black'; roles[idx[17]].b='black';
                 const boardData = shuffled.map((w, i) => ({ word: w.word, role_a_view: roles[i].a, role_b_view: roles[i].b, status_a: 'neutral', status_b: 'neutral' }));
+                
                 await mySupabase.from('game_state').delete().neq('id', 0);
                 await mySupabase.from('game_state').insert(boardData);
                 await mySupabase.from('game_hints').delete().neq('id', 0);
@@ -202,39 +199,81 @@
         };
 
         async function loadGame() {
-            const { data: ctrl } = await mySupabase.from('game_control').select('current_turn').single();
-            const { data: words } = await mySupabase.from('game_state').select('*').order('id', { ascending: true });
-            const { data: hints } = await mySupabase.from('game_hints').select('*').order('created_at', { ascending: true });
-            
-            if (!words || words.length === 0) { document.getElementById('newGameBtn').style.display = 'inline-block'; return; }
-            
-            const isGameOver = words.some(w => w.status_a === 'assassin' || w.status_b === 'assassin');
-            const allFound = words.filter(w => w.status_a === 'agent' || w.status_b === 'agent').length >= 15;
-            const isMyTurn = ctrl.current_turn === myRole;
-
-            document.getElementById('newGameBtn').style.display = (isGameOver || allFound) ? 'inline-block' : 'none';
-            document.getElementById('statusBar').style.background = isGameOver ? "#e51400" : (allFound ? "#4a7a3c" : "#007acc");
-            document.getElementById('turnIndicator').innerText = isGameOver ? "ERR_CRITICAL" : (allFound ? "DEPLOYED" : `LINE: ROLE_${ctrl.current_turn}_ACTIVE`);
-            
-            const board = document.getElementById('board');
-            board.className = (isMyTurn && !isGameOver) ? "grid" : "grid not-your-turn";
-            board.innerHTML = '';
-            
-            words.forEach((item, i) => {
-                const row = document.createElement('div');
-                row.className = 'word-row';
-                const idStr = (i + 1).toString().padStart(2, '0');
-                row.innerHTML = `<span class="key">"node_${idStr}"</span>: <span class="val">"${item.word}"</span>,`;
+            try {
+                const { data: ctrl } = await mySupabase.from('game_control').select('current_turn').single();
+                const { data: words } = await mySupabase.from('game_state').select('*').order('id', { ascending: true });
+                const { data: hints } = await mySupabase.from('game_hints').select('*').order('created_at', { ascending: true });
                 
-                const statusMe = (myRole === 'A') ? item.status_a : item.status_b;
-                if(item.status_a === 'assassin' || item.status_b === 'assassin') row.classList.add('assassin');
-                else if(item.status_a === 'agent' || item.status_b === 'agent') row.classList.add('agent');
-                else if(statusMe === 'civil') row.classList.add('civil');
-                
-                const viewMe = (myRole === 'A') ? item.role_a_view : item.role_b_view;
-                if(!row.classList.contains('agent') && !row.classList.contains('assassin')){
-                    if(viewMe === 'green') row.classList.add('hint-green');
-                    if(viewMe === 'black') row.classList.add('hint-black');
+                if (!words || words.length === 0) { 
+                    document.getElementById('board').innerText = "SYSTEM_IDLE: NO_ACTIVE_KERNEL";
+                    document.getElementById('newGameBtn').style.display = 'inline-block'; 
+                    return; 
                 }
+                
+                const isGameOver = words.some(w => w.status_a === 'assassin' || w.status_b === 'assassin');
+                const allFound = words.filter(w => w.status_a === 'agent' || w.status_b === 'agent').length >= 15;
+                const isMyTurn = ctrl && ctrl.current_turn === myRole;
 
-                row.onclick = async
+                document.getElementById('newGameBtn').style.display = (isGameOver || allFound) ? 'inline-block' : 'none';
+                document.getElementById('statusBar').style.background = isGameOver ? "#e51400" : (allFound ? "#4a7a3c" : "#007acc");
+                document.getElementById('turnIndicator').innerText = isGameOver ? "ERR_CRITICAL" : (allFound ? "DEPLOYED" : `LINE: ROLE_${ctrl ? ctrl.current_turn : '?'}_ACTIVE`);
+                
+                const board = document.getElementById('board');
+                board.className = (isMyTurn && !isGameOver) ? "grid" : "grid not-your-turn";
+                board.innerHTML = '';
+                
+                words.forEach((item, i) => {
+                    const row = document.createElement('div');
+                    row.className = 'word-row';
+                    const idStr = (i + 1).toString().padStart(2, '0');
+                    row.innerHTML = `<span class="key">"node_${idStr}"</span>: <span class="val">"${item.word}"</span>,`;
+                    
+                    const statusMe = (myRole === 'A') ? item.status_a : item.status_b;
+                    if(item.status_a === 'assassin' || item.status_b === 'assassin') row.classList.add('assassin');
+                    else if(item.status_a === 'agent' || item.status_b === 'agent') row.classList.add('agent');
+                    else if(statusMe === 'civil') row.classList.add('civil');
+                    
+                    const viewMe = (myRole === 'A') ? item.role_a_view : item.role_b_view;
+                    if(!row.classList.contains('agent') && !row.classList.contains('assassin')){
+                        if(viewMe === 'green') row.classList.add('hint-green');
+                        if(viewMe === 'black') row.classList.add('hint-black');
+                    }
+
+                    row.onclick = async () => {
+                        const otherView = (myRole === 'A') ? item.role_b_view : item.role_a_view;
+                        let res = 'civil';
+                        if(otherView === 'green') res = 'agent';
+                        if(otherView === 'black') res = 'assassin';
+                        
+                        if (hints && hints.length > 0) {
+                            const last = hints[hints.length-1];
+                            const upd = last.revealed_words ? (last.revealed_words + ',' + item.word + ':' + res) : (item.word + ':' + res);
+                            await mySupabase.from('game_hints').update({ revealed_words: upd }).eq('id', last.id);
+                        }
+                        await mySupabase.from('game_state').update((myRole === 'A') ? {status_a: res} : {status_b: res}).eq('id', item.id);
+                        if(res === 'civil') document.getElementById('endTurnBtn').click();
+                    };
+                    board.appendChild(row);
+                });
+
+                const hist = document.getElementById('clueHistory');
+                hist.innerHTML = hints ? hints.map(h => {
+                    let wordsHtml = '';
+                    if (h.revealed_words) {
+                        h.revealed_words.split(',').forEach(w => {
+                            const parts = w.split(':');
+                            if (parts.length === 2) wordsHtml += ` <span class="hist-${parts[1]}">${parts[0]}</span>`;
+                        });
+                    }
+                    return `<div class="history-log">// [${h.sent_by}] stream_in: "${h.clue_text}" (${h.clue_number}) -> ${wordsHtml || '...'}</div>`;
+                }).join('') : '';
+                hist.scrollTop = hist.scrollHeight;
+            } catch (err) { console.error("Load Error:", err); }
+        }
+        
+        // Démarrage de la boucle de rafraîchissement
+        setInterval(loadGame, 2000);
+        loadGame();
+    </script>
+</body>
+</html>
