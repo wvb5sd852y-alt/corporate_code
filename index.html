@@ -11,14 +11,15 @@
         .tabs { background: #2d2d2d; display: flex; height: 35px; align-items: center; justify-content: space-between; padding-right: 10px; }
         .tab { padding: 0 20px; background: #1e1e1e; color: #fff; border-top: 1px solid #007acc; height: 100%; display: flex; align-items: center; }
         
-        /* Barre de Communication (Indice) */
-        .hint-bar { background: #333333; padding: 8px 20px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid #1e1e1e; }
-        .hint-input { background: #3c3c3c; border: 1px solid #555; color: #ce9178; padding: 4px 8px; font-family: inherit; font-size: 12px; }
-        .hint-number { width: 45px; }
-        .hint-text { flex-grow: 1; max-width: 300px; }
-        .hint-display { color: #6a9955; font-style: italic; border-left: 2px solid #6a9955; padding-left: 10px; }
+        /* Barre d'indices Camouflée */
+        .hint-bar { background: #333333; padding: 8px 20px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid #1e1e1e; font-size: 12px; }
+        .hint-input { background: #3c3c3c; border: 1px solid #555; color: #ce9178; padding: 4px 8px; font-family: inherit; }
+        .hint-text { width: 180px; }
+        .hint-num { width: 40px; }
+        .hint-display { color: #6a9955; font-style: italic; margin-left: 15px; border-left: 1px solid #555; padding-left: 15px; }
 
         .deploy-btn { background: #007acc; color: white; border: none; padding: 4px 12px; font-size: 11px; cursor: pointer; border-radius: 2px; }
+        .deploy-btn:hover { background: #1f8ad2; }
         .deploy-btn:disabled { background: #3e3e42; color: #858585; cursor: not-allowed; }
 
         .code-area { padding: 20px 40px; line-height: 1.6; overflow-y: auto; }
@@ -26,16 +27,19 @@
         .word { border: 1px solid #3c3c3c; padding: 15px 10px; cursor: pointer; color: #ce9178; border-left: 3px solid transparent; }
         .word:hover { background: #2a2d2e; }
 
+        /* Couleurs de jeu */
         .agent { color: #6a9955 !important; font-style: italic; border-color: #6a9955 !important; background: rgba(106, 153, 85, 0.1); pointer-events: none; }
         .civil { opacity: 0.4; text-decoration: line-through; border-color: #333 !important; }
         .assassin { color: #f44747 !important; font-weight: bold; border-color: #f44747 !important; background: rgba(244, 71, 71, 0.4) !important; pointer-events: none; }
+        
         .hint-green { border-left: 3px solid #6a9955 !important; }
         .hint-black { border-left: 3px solid #f44747 !important; }
 
+        /* Verrouillage */
         .not-your-turn { opacity: 0.5; pointer-events: none; filter: grayscale(0.5); }
         .game-over-active { pointer-events: none !important; }
         
-        .status-bar { background: #007acc; color: white; padding: 2px 10px; font-size: 11px; position: fixed; bottom: 0; width: 100%; display: flex; justify-content: space-between; }
+        .status-bar { background: #007acc; color: white; padding: 2px 10px; font-size: 11px; position: fixed; bottom: 0; width: 100%; display: flex; justify-content: space-between; transition: background 0.3s; }
         .status-bar.error { background: #f44747; }
         .syntax-purple { color: #c586c0; }
         .syntax-blue { color: #569cd6; }
@@ -52,23 +56,23 @@
             <div class="tab">word_matrix.json</div>
             <button id="endTurnBtn" class="deploy-btn">DEPLOY: COMMIT_CHANGES</button>
         </div>
-        
-        <div class="hint-bar" id="hintBarUI">
-            <span style="color: #808080;">// CLUE_INPUT:</span>
-            <input type="text" id="inputClueText" class="hint-input hint-text" placeholder="Entrer indice...">
-            <input type="number" id="inputClueNum" class="hint-input hint-number" min="1" max="8" value="1">
-            <button id="sendClueBtn" class="deploy-btn" style="background: #2d2d2d; border: 1px solid #555;">SEND</button>
-            <div class="hint-display" id="displayClue">Attente d'indice...</div>
+
+        <div class="hint-bar">
+            <span style="color: #808080;">// CLUE:</span>
+            <input type="text" id="clueText" class="hint-input hint-text" placeholder="string_value">
+            <input type="number" id="clueNum" class="hint-input hint-num" min="1" max="8" value="1">
+            <button id="sendClueBtn" class="deploy-btn" style="background: #444;">SEND</button>
+            <div class="hint-display" id="displayClue">Waiting for stream...</div>
         </div>
 
         <div class="code-area">
             <span class="syntax-purple">export</span> <span class="syntax-blue">const</span> nodes = [
-            <div class="grid" id="board">Synchronisation...</div>
+            <div class="grid" id="board">Loading environment...</div>
             ];
         </div>
     </div>
     <div class="status-bar" id="statusBar">
-        <span id="processText">Process: Connected</span>
+        <span id="processText">Process: Active</span>
         <span id="turnIndicator">Role: -</span>
     </div>
 
@@ -85,45 +89,35 @@
             const urlParams = new URLSearchParams(window.location.search);
             const myRole = (urlParams.get('role') || 'A').toUpperCase();
 
-            // --- GESTION DES INDICES ---
-            async function sendClue() {
-                const text = document.getElementById('inputClueText').value;
-                const num = document.getElementById('inputClueNum').value;
+            // Envoyer un indice
+            document.getElementById('sendClueBtn').onclick = async () => {
+                const text = document.getElementById('clueText').value;
+                const num = document.getElementById('clueNum').value;
                 if (!text) return;
-
-                await mySupabase.from('game_hints').update({ 
-                    clue_text: text, 
-                    clue_number: num, 
-                    sent_by: myRole 
-                }).eq('id', 1);
-                
-                document.getElementById('inputClueText').value = '';
-            }
-            document.getElementById('sendClueBtn').onclick = sendClue;
+                await mySupabase.from('game_hints').update({ clue_text: text, clue_number: num, sent_by: myRole }).eq('id', 1);
+                document.getElementById('clueText').value = '';
+            };
 
             async function toggleTurn() {
                 const nextTurn = (myRole === 'A') ? 'B' : 'A';
                 await mySupabase.from('game_control').update({ current_turn: nextTurn }).eq('id', 1);
                 loadGame();
             }
+
             document.getElementById('endTurnBtn').onclick = toggleTurn;
 
             async function loadGame() {
                 const { data: ctrl } = await mySupabase.from('game_control').select('current_turn').eq('id', 1).single();
-                const currentTurn = ctrl ? ctrl.current_turn : 'A';
-                const isMyTurn = currentTurn === myRole;
+                const isMyTurn = ctrl.current_turn === myRole;
 
-                // Charger l'indice actuel
                 const { data: hintData } = await mySupabase.from('game_hints').select('*').eq('id', 1).single();
-                const displayClue = document.getElementById('displayClue');
                 if (hintData) {
-                    displayClue.innerText = `LAST_CLUE (by ${hintData.sent_by}): ${hintData.clue_text} / ${hintData.clue_number}`;
+                    document.getElementById('displayClue').innerText = `// INCOMING: "${hintData.clue_text}" [${hintData.clue_number}]`;
                 }
 
                 const { data: words } = await mySupabase.from('game_state').select('*').order('id', { ascending: true });
                 const board = document.getElementById('board');
                 const btn = document.getElementById('endTurnBtn');
-                const turnInd = document.getElementById('turnIndicator');
                 const statusBar = document.getElementById('statusBar');
                 
                 const isGameOver = words.some(w => w.status_a === 'assassin' || w.status_b === 'assassin');
@@ -132,12 +126,13 @@
                     board.className = "grid game-over-active";
                     btn.disabled = true;
                     statusBar.className = "status-bar error";
-                    turnInd.innerText = "CRITICAL FAILURE";
+                    document.getElementById('processText').innerText = "Process: FATAL_ERROR";
+                    document.getElementById('turnIndicator').innerText = "SYSTEM HALTED";
                 } else {
                     board.className = isMyTurn ? "grid" : "grid not-your-turn";
                     btn.disabled = !isMyTurn;
                     statusBar.className = "status-bar";
-                    turnInd.innerText = isMyTurn ? `ACTIVE: ROLE_${myRole}` : `WAITING: ROLE_${currentTurn}`;
+                    document.getElementById('turnIndicator').innerText = isMyTurn ? `ACTIVE: ROLE_${myRole}` : `WAITING: ROLE_${ctrl.current_turn}`;
                 }
                 
                 board.innerHTML = ''; 
@@ -171,6 +166,7 @@
                     board.appendChild(div);
                 });
             }
+
             setInterval(loadGame, 2000);
             loadGame();
         }
