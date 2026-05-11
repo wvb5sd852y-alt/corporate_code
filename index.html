@@ -5,38 +5,31 @@
     <title>Visual Studio Code - word_matrix.json</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        body { background: #1e1e1e; color: #d4d4d4; font-family: 'Consolas', monospace; margin: 0; display: flex; height: 100vh; font-size: 13px; overflow: hidden; flex-direction: row; }
+        body { background: #1e1e1e; color: #d4d4d4; font-family: 'Consolas', monospace; margin: 0; display: flex; height: 100vh; font-size: 13px; overflow: hidden; }
         .sidebar { width: 200px; background: #252526; border-right: 1px solid #333; padding: 10px; flex-shrink: 0; }
         .main-content { flex-grow: 1; display: flex; flex-direction: column; height: 100vh; }
-        .tabs { background: #2d2d2d; display: flex; height: 35px; align-items: center; justify-content: space-between; padding-right: 10px; flex-shrink: 0; }
-        .tab { padding: 0 20px; background: #1e1e1e; color: #fff; border-top: 1px solid #007acc; height: 100%; display: flex; align-items: center; }
-        .code-area { flex-grow: 1; padding: 20px 40px; line-height: 1.6; overflow-y: auto; background: #1e1e1e; }
+        .tabs { background: #2d2d2d; display: flex; height: 35px; align-items: center; justify-content: space-between; padding: 0 10px; flex-shrink: 0; }
+        .tab { padding: 0 15px; background: #1e1e1e; color: #fff; border-top: 1px solid #007acc; height: 100%; display: flex; align-items: center; }
+        
+        .code-area { flex-grow: 1; padding: 20px 40px; overflow-y: auto; background: #1e1e1e; }
         .grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin: 20px 0; }
         .word { border: 1px solid #3c3c3c; padding: 15px 10px; cursor: pointer; color: #ce9178; border-left: 3px solid transparent; }
         .word:hover { background: #2a2d2e; }
 
-        /* Terminal */
-        .terminal-panel { height: 220px; background: #1e1e1e; border-top: 1px solid #333; display: flex; flex-direction: column; flex-shrink: 0; }
+        .terminal-panel { height: 220px; background: #1e1e1e; border-top: 1px solid #333; display: flex; flex-direction: column; }
         .terminal-tabs { background: #1e1e1e; display: flex; padding: 0 20px; gap: 20px; height: 30px; align-items: center; border-bottom: 1px solid #2d2d2d; }
-        .terminal-tab { font-size: 11px; color: #858585; cursor: pointer; text-transform: uppercase; }
-        .terminal-tab.active { color: #fff; border-bottom: 1px solid #fff; padding-bottom: 2px; }
-        .terminal-content { flex-grow: 1; padding: 10px 20px; font-family: 'Consolas', monospace; overflow-y: auto; display: flex; flex-direction: column; }
+        .terminal-tab { font-size: 11px; color: #858585; text-transform: uppercase; }
+        .terminal-tab.active { color: #fff; border-bottom: 1px solid #fff; }
+        .terminal-content { flex-grow: 1; padding: 10px 20px; overflow-y: auto; }
         
-        /* Historique avec couleurs */
-        .history-log { font-size: 11px; margin-bottom: 6px; border-bottom: 1px solid #252526; padding-bottom: 4px; }
-        .log-time { color: #555; }
-        .log-clue { color: #ce9178; font-weight: bold; }
-        .log-words { margin-left: 10px; }
+        .history-log { font-size: 11px; margin-bottom: 4px; border-bottom: 1px solid #252526; padding-bottom: 2px; }
         .hist-agent { color: #6a9955; font-weight: bold; }
         .hist-civil { color: #808080; text-decoration: line-through; }
         .hist-assassin { color: #f44747; font-weight: bold; }
 
-        .terminal-input-row { display: flex; align-items: center; gap: 8px; margin-top: auto; color: #ccc; padding-top: 10px; }
-        .term-in { background: transparent; border: none; color: #ce9178; outline: none; font-family: inherit; font-size: 13px; }
-        .term-text { width: 180px; }
-        .term-num { width: 30px; }
         .deploy-btn { background: #007acc; color: white; border: none; padding: 4px 12px; font-size: 11px; cursor: pointer; border-radius: 2px; }
-        .deploy-btn:disabled { background: #3e3e42; color: #858585; cursor: not-allowed; }
+        .new-game-btn { background: #6a9955; margin-right: 10px; }
+        .deploy-btn:disabled { background: #3e3e42; color: #858585; }
 
         .agent { color: #6a9955 !important; font-style: italic; border-color: #6a9955 !important; background: rgba(106, 153, 85, 0.1); pointer-events: none; }
         .civil { opacity: 0.4; text-decoration: line-through; border-color: #333 !important; }
@@ -44,41 +37,37 @@
         .hint-green { border-left: 3px solid #6a9955 !important; }
         .hint-black { border-left: 3px solid #f44747 !important; }
         .not-your-turn { opacity: 0.5; pointer-events: none; filter: grayscale(0.5); }
-        .game-over-active { pointer-events: none !important; }
         .status-bar { background: #007acc; color: white; padding: 2px 10px; font-size: 11px; height: 22px; display: flex; justify-content: space-between; align-items: center; }
         .status-bar.error { background: #f44747; }
-        .syntax-purple { color: #c586c0; }
-        .syntax-blue { color: #569cd6; }
     </style>
 </head>
 <body>
     <div class="sidebar">
         <div style="color: #6d6d6d; font-size: 11px; margin-bottom: 10px;">EXPLORER</div>
-        <div class="syntax-blue">▼ src</div>
+        <div style="color: #569cd6;">▼ src</div>
         <div style="padding-left: 15px; color: #fff; background: #37373d;">word_matrix.json</div>
     </div>
     <div class="main-content">
         <div class="tabs">
-            <div class="tab">word_matrix.json</div>
+            <div>
+                <button id="newGameBtn" class="deploy-btn new-game-btn" style="display:none;">NEW_KERNEL_INIT</button>
+                <span class="tab">word_matrix.json</span>
+            </div>
             <button id="endTurnBtn" class="deploy-btn">DEPLOY: COMMIT_CHANGES</button>
         </div>
         <div class="code-area">
-            <span class="syntax-purple">export</span> <span class="syntax-blue">const</span> nodes = [
-            <div class="grid" id="board">...</div>
-            ];
+            <div class="grid" id="board">Synchronisation...</div>
         </div>
         <div class="terminal-panel">
-            <div class="terminal-tabs">
-                <div class="terminal-tab active">Terminal</div>
-            </div>
+            <div class="terminal-tabs"><div class="terminal-tab active">Terminal</div></div>
             <div class="terminal-content">
-                <div id="clueHistory" style="overflow-y: auto; flex-grow: 1;"></div>
-                <div class="terminal-input-row">
-                    <span>antoine@master:~$ ./push_clue --val</span>
-                    <input type="text" id="clueText" class="term-in term-text" placeholder='"string"'>
-                    <span>--count</span>
-                    <input type="number" id="clueNum" class="term-in term-num" min="1" max="8" value="1">
-                    <button id="sendClueBtn" class="deploy-btn" style="background: #333; margin-left: 10px;">EXECUTE</button>
+                <div id="clueHistory"></div>
+                <div style="display:flex; gap:10px; margin-top:10px; align-items:center;">
+                    <span>antoine@master:~$ ./push --val</span>
+                    <input type="text" id="clueText" style="background:transparent; border:none; color:#ce9178; outline:none; width:150px;" placeholder='"..."'>
+                    <span>--n</span>
+                    <input type="number" id="clueNum" style="background:transparent; border:none; color:#ce9178; width:30px;" value="1">
+                    <button id="sendClueBtn" class="deploy-btn" style="background:#333;">EXECUTE</button>
                 </div>
             </div>
         </div>
@@ -98,102 +87,104 @@
             const SUPABASE_URL = 'https://ftvxmlxdovbgcxdayzvn.supabase.co'; 
             const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ0dnhtbHhkb3ZiZ2N4ZGF5enZuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg0NzgwNDcsImV4cCI6MjA5NDA1NDA0N30.IOHBBGzED0FV1xRYKOMsJapjACpeX2JVEhfNgXXT4B8'; 
             const mySupabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-            const urlParams = new URLSearchParams(window.location.search);
-            const myRole = (urlParams.get('role') || 'A').toUpperCase();
+            const myRole = (new URLSearchParams(window.location.search).get('role') || 'A').toUpperCase();
 
+            async function startNewGame() {
+                // 1. Piocher 25 mots au hasard
+                const { data: bank } = await mySupabase.from('word_bank').select('word');
+                const shuffled = bank.sort(() => 0.5 - Math.random()).slice(0, 25);
+                
+                // 2. Création de la logique Duo (9 verts chacun, dont 3 en commun)
+                const roles = Array(25).fill(null).map(() => ({ a: 'neutral', b: 'neutral' }));
+                const indices = [...Array(25).keys()].sort(() => 0.5 - Math.random());
+                
+                indices.slice(0, 3).forEach(i => { roles[i].a = 'green'; roles[i].b = 'green'; }); // 3 communs
+                indices.slice(3, 9).forEach(i => { roles[i].a = 'green'; }); // 6 propres à A
+                indices.slice(9, 15).forEach(i => { roles[i].b = 'green'; }); // 6 propres à B
+                roles[indices[15]].a = 'black'; roles[indices[16]].b = 'black'; // Assassins
+                roles[indices[17]].a = 'black'; roles[indices[17]].b = 'black'; // Assassin commun
+
+                const newBoard = shuffled.map((w, i) => ({
+                    word: w.word,
+                    role_a_view: roles[i].a,
+                    role_b_view: roles[i].b,
+                    status_a: 'neutral',
+                    status_b: 'neutral'
+                }));
+
+                await mySupabase.from('game_state').delete().neq('id', 0);
+                await mySupabase.from('game_state').insert(newBoard);
+                await mySupabase.from('game_hints').delete().neq('id', 0);
+                await mySupabase.from('game_control').update({ current_turn: 'A' }).eq('id', 1);
+                location.reload();
+            }
+
+            document.getElementById('newGameBtn').onclick = startNewGame;
             document.getElementById('sendClueBtn').onclick = async () => {
-                const text = document.getElementById('clueText').value.replace(/"/g, '');
+                const text = document.getElementById('clueText').value;
                 const num = document.getElementById('clueNum').value;
-                if (!text) return;
-                await mySupabase.from('game_hints').insert([{ clue_text: text, clue_number: num, sent_by: myRole }]);
+                if(text) await mySupabase.from('game_hints').insert([{ clue_text: text, clue_number: num, sent_by: myRole }]);
                 document.getElementById('clueText').value = '';
-                loadGame();
+            };
+            document.getElementById('endTurnBtn').onclick = async () => {
+                const next = (myRole === 'A') ? 'B' : 'A';
+                await mySupabase.from('game_control').update({ current_turn: next }).eq('id', 1);
             };
 
-            async function toggleTurn() {
-                const nextTurn = (myRole === 'A') ? 'B' : 'A';
-                await mySupabase.from('game_control').update({ current_turn: nextTurn }).eq('id', 1);
-                loadGame();
-            }
-            document.getElementById('endTurnBtn').onclick = toggleTurn;
-
             async function loadGame() {
-                const { data: ctrl } = await mySupabase.from('game_control').select('current_turn').eq('id', 1).single();
-                const currentTurn = ctrl ? ctrl.current_turn : 'A';
-                const isMyTurn = currentTurn === myRole;
-
-                const { data: allHints } = await mySupabase.from('game_hints').select('*').order('created_at', { ascending: true });
-                const historyDiv = document.getElementById('clueHistory');
-                historyDiv.innerHTML = '';
-                if (allHints) {
-                    allHints.forEach(h => {
-                        const line = document.createElement('div');
-                        line.className = 'history-log';
-                        const time = new Date(h.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-                        
-                        let wordsHtml = '';
-                        if (h.revealed_words) {
-                            h.revealed_words.split(',').forEach(w => {
-                                const [name, status] = w.split(':');
-                                wordsHtml += ` <span class="hist-${status}">${name}</span>`;
-                            });
-                        }
-                        
-                        line.innerHTML = `<span class="log-time">[${time}]</span> <span class="log-clue">@${h.sent_by} -> ${h.clue_text} (${h.clue_number})</span><span class="log-words">${wordsHtml}</span>`;
-                        historyDiv.appendChild(line);
-                    });
-                    historyDiv.scrollTop = historyDiv.scrollHeight;
-                }
-
+                const { data: ctrl } = await mySupabase.from('game_control').select('current_turn').single();
                 const { data: words } = await mySupabase.from('game_state').select('*').order('id', { ascending: true });
-                const board = document.getElementById('board');
-                const btn = document.getElementById('endTurnBtn');
+                const { data: hints } = await mySupabase.from('game_hints').select('*').order('created_at', { ascending: true });
+                
                 const isGameOver = words.some(w => w.status_a === 'assassin' || w.status_b === 'assassin');
-
-                if (isGameOver) { board.className = "grid game-over-active"; document.getElementById('statusBar').className = "status-bar error"; }
-                else { board.className = isMyTurn ? "grid" : "grid not-your-turn"; }
+                const allFound = words.filter(w => w.status_a === 'agent' || w.status_b === 'agent').length >= 15;
                 
-                document.getElementById('turnIndicator').innerText = isGameOver ? "FAILURE" : (isMyTurn ? `ACTIVE: ${myRole}` : `WAITING: ${currentTurn}`);
+                document.getElementById('newGameBtn').style.display = (isGameOver || allFound) ? 'inline-block' : 'none';
+                document.getElementById('statusBar').className = isGameOver ? "status-bar error" : "status-bar";
+                document.getElementById('turnIndicator').innerText = isGameOver ? "TERMINATED" : (allFound ? "SUCCESS" : `ACTIVE: ${ctrl.current_turn}`);
                 
-                board.innerHTML = ''; 
+                const board = document.getElementById('board');
+                board.className = (ctrl.current_turn === myRole && !isGameOver) ? "grid" : "grid not-your-turn";
+                board.innerHTML = '';
+                
                 words.forEach(item => {
                     const div = document.createElement('div');
                     div.className = 'word';
                     div.innerText = `"${item.word}",`;
-                    const myStatus = (myRole === 'A') ? item.status_a : item.status_b;
-                    if (item.status_a === 'assassin' || item.status_b === 'assassin') div.classList.add('assassin');
-                    else if (item.status_a === 'agent' || item.status_b === 'agent') div.classList.add('agent');
-                    else if (myStatus === 'civil') div.classList.add('civil');
-                    if (!div.classList.contains('agent') && !div.classList.contains('assassin')) {
-                        const myView = (myRole === 'A') ? item.role_a_view : item.role_b_view;
-                        if (myView === 'green') div.classList.add('hint-green');
-                        if (myView === 'black') div.classList.add('hint-black');
+                    const statusMe = (myRole === 'A') ? item.status_a : item.status_b;
+                    if(item.status_a === 'assassin' || item.status_b === 'assassin') div.classList.add('assassin');
+                    else if(item.status_a === 'agent' || item.status_b === 'agent') div.classList.add('agent');
+                    else if(statusMe === 'civil') div.classList.add('civil');
+                    
+                    const viewMe = (myRole === 'A') ? item.role_a_view : item.role_b_view;
+                    if(!div.classList.contains('agent') && !div.classList.contains('assassin')){
+                        if(viewMe === 'green') div.classList.add('hint-green');
+                        if(viewMe === 'black') div.classList.add('hint-black');
                     }
-
                     div.onclick = async () => {
-                        if (isGameOver || !isMyTurn || div.classList.contains('agent') || div.classList.contains('assassin')) return;
                         const otherView = (myRole === 'A') ? item.role_b_view : item.role_a_view;
-                        let res = 'civil'; 
-                        if (otherView === 'green') res = 'agent';
-                        if (otherView === 'black') res = 'assassin';
+                        let res = 'civil';
+                        if(otherView === 'green') res = 'agent';
+                        if(otherView === 'black') res = 'assassin';
                         
-                        // Enregistrer le mot dans l'historique du dernier indice
-                        if (allHints && allHints.length > 0) {
-                            const lastHint = allHints[allHints.length - 1];
-                            const newWords = lastHint.revealed_words ? (lastHint.revealed_words + ',' + item.word + ':' + res) : (item.word + ':' + res);
-                            await mySupabase.from('game_hints').update({ revealed_words: newWords }).eq('id', lastHint.id);
+                        if (hints && hints.length > 0) {
+                            const last = hints[hints.length-1];
+                            const upd = last.revealed_words ? (last.revealed_words + ',' + item.word + ':' + res) : (item.word + ':' + res);
+                            await mySupabase.from('game_hints').update({ revealed_words: upd }).eq('id', last.id);
                         }
-
-                        const update = (myRole === 'A') ? { status_a: res } : { status_b: res };
-                        await mySupabase.from('game_state').update(update).eq('id', item.id);
-                        if (res === 'civil') await toggleTurn();
-                        else loadGame();
+                        await mySupabase.from('game_state').update((myRole === 'A') ? {status_a: res} : {status_b: res}).eq('id', item.id);
+                        if(res === 'civil') document.getElementById('endTurnBtn').click();
                     };
                     board.appendChild(div);
                 });
+
+                const hist = document.getElementById('clueHistory');
+                hist.innerHTML = hints ? hints.map(h => {
+                    const wordsArr = h.revealed_words ? h.revealed_words.split(',').map(w => `<span class="hist-${w.split(':')[1]}">${w.split(':')[0]}</span>`).join(' ') : '';
+                    return `<div class="history-log">ROLE_${h.sent_by}: ${h.clue_text} (${h.clue_number}) -> ${wordsArr}</div>`;
+                }).join('') : '';
             }
-            setInterval(loadGame, 2000);
-            loadGame();
+            setInterval(loadGame, 2000); loadGame();
         }
     </script>
 </body>
