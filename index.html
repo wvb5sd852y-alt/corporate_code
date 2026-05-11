@@ -19,14 +19,10 @@
             --syntax-keyword: #c586c0;
             --syntax-comment: #6a9955;
             --icon-grey: #858585;
-            --term-agent: #6a9955;
-            --term-civil: #808080;
-            --term-assassin: #f44747;
         }
 
         body { background: var(--bg-darker); color: var(--text-main); font-family: 'Segoe UI', sans-serif; margin: 0; display: flex; flex-direction: column; height: 100vh; font-size: 13px; overflow: hidden; }
 
-        /* TOP BAR */
         .top-menu { background: var(--bg-darker); height: 35px; display: flex; align-items: center; padding: 0; flex-shrink: 0; }
         .menu-items { display: flex; gap: 12px; padding: 0 10px; font-size: 12px; color: #bbb; width: 240px; }
         .search-container { flex-grow: 1; display: flex; align-items: center; justify-content: center; gap: 10px; }
@@ -37,21 +33,22 @@
 
         .layout-middle { display: flex; flex-grow: 1; overflow: hidden; }
 
-        /* ACTIVITY BAR */
         .activity-bar { width: 48px; background: var(--bg-activity); display: flex; flex-direction: column; align-items: center; padding: 10px 0; gap: 15px; border-right: 1px solid var(--border); flex-shrink: 0; }
         .act-icon { width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--icon-grey); }
         .act-icon.active { color: #fff; border-left: 2px solid #fff; }
 
-        /* SIDEBAR (AVEC INDICES EN ATTENTE) */
+        /* SIDEBAR */
         .sidebar { width: 260px; background: var(--bg-sidebar); display: flex; flex-direction: column; flex-shrink: 0; border-right: 1px solid var(--border); }
-        .sidebar-header { padding: 10px 20px; font-size: 11px; color: #bbbbbb; text-transform: uppercase; font-weight: bold; }
+        .sidebar-header { padding: 10px 20px; font-size: 11px; color: #bbbbbb; text-transform: uppercase; font-weight: bold; border-bottom: 1px solid #333; }
         .file-tree { padding: 5px 0; color: #cccccc; overflow-y: auto; flex-grow: 1; }
-        .tree-item { display: flex; align-items: center; padding: 3px 15px; cursor: pointer; gap: 6px; white-space: nowrap; font-size: 12px; }
+        .tree-item { display: flex; align-items: center; padding: 4px 15px; cursor: pointer; gap: 6px; white-space: nowrap; font-size: 12px; }
         .tree-item:hover { background: #2a2d2e; }
         .tree-item.active { background: #37373d; color: #fff; }
-        .tree-item.pending-file { color: #e2c08d; font-style: italic; } /* Couleur "Modified" VS Code */
+        
+        .staging-area { border-top: 1px solid #333; padding-top: 5px; background: rgba(0,0,0,0.1); max-height: 40%; overflow-y: auto; }
+        .pending-file { color: #e2c08d; font-family: 'Consolas', monospace; font-size: 11px; }
+        .pending-file span.clue-val { color: #ce9178; font-weight: bold; margin-right: 5px; }
 
-        /* MAIN CONTENT */
         .main-content { flex-grow: 1; display: flex; flex-direction: column; background: var(--bg-main); overflow: hidden; }
         .tabs { background: var(--bg-sidebar); display: flex; height: 35px; align-items: center; flex-shrink: 0; }
         .tab { padding: 0 12px; background: var(--bg-sidebar); color: #969696; border-right: 1px solid var(--bg-darker); height: 100%; display: flex; align-items: center; gap: 8px; font-size: 12px; }
@@ -72,7 +69,6 @@
         .assassin .val { color: #f44747 !important; font-weight: bold; }
         .assassin::after { content: " // FATAL_ERROR"; color: #f44747; font-size: 11px; }
 
-        /* TERMINAL */
         .terminal-panel { height: 220px; background: var(--bg-terminal); border-top: 1px solid var(--border); display: flex; flex-direction: column; }
         .terminal-tabs { background: var(--bg-main); display: flex; padding: 0 20px; gap: 20px; height: 30px; align-items: center; border-bottom: 1px solid #2d2d2d; font-size: 11px; color: #858585; }
         .terminal-tab.active { color: #fff; border-bottom: 1px solid #fff; }
@@ -114,11 +110,18 @@
         </div>
 
         <div class="sidebar">
-            <div class="sidebar-header">Explorer: DUO_SYSTEM</div>
+            <div class="sidebar-header">Explorer</div>
             <div class="file-tree" id="fileTree">
                 <div class="tree-item"><span style="color:#e37933">⌄</span> src</div>
                 <div class="tree-item active" style="padding-left:30px;"><span style="color:#cbcb41">{}</span> word_matrix.json</div>
-                <!-- Les indices en attente apparaîtront ici -->
+                <div class="tree-item" style="padding-left:30px;">📄 hardware.ts</div>
+                <div class="tree-item" style="padding-left:30px;">📄 types.d.ts</div>
+                <div class="tree-item">📄 package.json</div>
+            </div>
+            <div class="sidebar-header">Source Control</div>
+            <div class="file-tree staging-area" id="stagingArea">
+                <!-- Les indices préparés apparaîtront ici directements -->
+                <div style="padding: 10px; color: #666; font-style: italic;">No staged changes...</div>
             </div>
         </div>
 
@@ -165,34 +168,39 @@
 
     <script>
         const SUPABASE_URL = 'https://ftvxmlxdovbgcxdayzvn.supabase.co'; 
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ0dnhtbHhkb3ZiZ2N4ZGF5enZuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg0NzgwNDcsImV4cCI6MjA5NDA1NDA0N30.IOHBBGzED0FV1xRYKOMsJapjACpeX2JVEhfNgXXT4B8'; 
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ0dnhtbHhkb3ZiZ2N4ZGF5enZvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg0NzgwNDcsImV4cCI6MjA5NDA1NDA0N30.IOHBBGzED0FV1xRYKOMsJapjACpeX2JVEhfNgXXT4B8'; 
         const mySupabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
         const myRole = (new URLSearchParams(window.location.search).get('role') || 'A').toUpperCase();
 
-        // GESTION DES INDICES EN ATTENTE (LocalStorage)
+        // GESTION DES INDICES EN ATTENTE
         let pendingClues = JSON.parse(localStorage.getItem('pending_clues') || '[]');
 
         function updateSidebar() {
-            const tree = document.getElementById('fileTree');
-            // On nettoie les anciens fichiers de staging
-            document.querySelectorAll('.pending-file').forEach(el => el.remove());
+            const staging = document.getElementById('stagingArea');
+            staging.innerHTML = '';
             
+            if (pendingClues.length === 0) {
+                staging.innerHTML = '<div style="padding: 10px; color: #666; font-style: italic;">No staged changes...</div>';
+                return;
+            }
+
             pendingClues.forEach((c, index) => {
                 const item = document.createElement('div');
                 item.className = 'tree-item pending-file';
-                item.style.paddingLeft = '30px';
-                item.innerHTML = `<span style="color:#e2c08d">patch</span> patch_v${index+1}.diff`;
+                // Affichage direct : "INDICE (Nombre)"
+                item.innerHTML = `M <span class="clue-val">${c.text.toUpperCase()}</span> (${c.num})`;
+                
                 item.onclick = () => {
                     document.getElementById('clueText').value = c.text;
                     document.getElementById('clueNum').value = c.num;
                 };
-                // Bouton supprimer discret au clic droit
+
                 item.oncontextmenu = (e) => {
                     e.preventDefault();
                     pendingClues.splice(index, 1);
                     savePending();
                 };
-                tree.appendChild(item);
+                staging.appendChild(item);
             });
         }
 
@@ -211,8 +219,7 @@
             }
         };
 
-        // --- FONCTIONS DE JEU ---
-
+        // FONCTIONS DE JEU
         async function startNewGame() {
             const { data: bank } = await mySupabase.from('word_bank').select('word');
             const shuffled = bank.sort(() => 0.5 - Math.random()).slice(0, 25);
@@ -237,8 +244,7 @@
             const num = document.getElementById('clueNum').value;
             if(text) {
                 await mySupabase.from('game_hints').insert([{ clue_text: text, clue_number: num, sent_by: myRole }]);
-                // Si l'indice envoyé était un indice en attente, on peut le retirer (optionnel)
-                const pIndex = pendingClues.findIndex(c => c.text === text);
+                const pIndex = pendingClues.findIndex(c => c.text === text && c.num == num);
                 if(pIndex !== -1) { pendingClues.splice(pIndex, 1); savePending(); }
                 document.getElementById('clueText').value = '';
             }
@@ -253,36 +259,29 @@
             const { data: ctrl } = await mySupabase.from('game_control').select('current_turn').single();
             const { data: words } = await mySupabase.from('game_state').select('*').order('id', { ascending: true });
             const { data: hints } = await mySupabase.from('game_hints').select('*').order('created_at', { ascending: true });
-            
             if (!words || words.length === 0) { document.getElementById('newGameBtn').style.display = 'inline-block'; return; }
             const isGameOver = words.some(w => w.status_a === 'assassin' || w.status_b === 'assassin');
             const allFound = words.filter(w => w.status_a === 'agent' || w.status_b === 'agent').length >= 15;
             const isMyTurn = ctrl.current_turn === myRole;
-
             document.getElementById('newGameBtn').style.display = (isGameOver || allFound) ? 'inline-block' : 'none';
             document.getElementById('turnIndicator').innerText = isGameOver ? "FATAL_ERROR" : (allFound ? "SUCCESS" : `ROLE_${ctrl.current_turn}_ACTIVE`);
-            
             const board = document.getElementById('board');
             board.className = (isMyTurn && !isGameOver) ? "grid" : "grid not-your-turn";
             board.innerHTML = '';
-            
             words.forEach((item, i) => {
                 const row = document.createElement('div');
                 row.className = 'word-row';
                 const idStr = (i + 1).toString().padStart(2, '0');
                 row.innerHTML = `<span class="key">"node_${idStr}"</span>: <span class="val">"${item.word}"</span>,`;
-                
                 const statusMe = (myRole === 'A') ? item.status_a : item.status_b;
                 if(item.status_a === 'assassin' || item.status_b === 'assassin') row.classList.add('assassin');
                 else if(item.status_a === 'agent' || item.status_b === 'agent') row.classList.add('agent');
                 else if(statusMe === 'civil') row.classList.add('civil');
-                
                 const viewMe = (myRole === 'A') ? item.role_a_view : item.role_b_view;
                 if(!row.classList.contains('agent') && !row.classList.contains('assassin')){
                     if(viewMe === 'green') row.classList.add('hint-green');
                     if(viewMe === 'black') row.classList.add('hint-black');
                 }
-
                 row.onclick = async () => {
                     const otherView = (myRole === 'A') ? item.role_b_view : item.role_a_view;
                     let res = 'civil';
@@ -298,7 +297,6 @@
                 };
                 board.appendChild(row);
             });
-
             const hist = document.getElementById('clueHistory');
             hist.innerHTML = hints ? hints.map(h => `<div class="history-log">// [${h.sent_by}] clue: "${h.clue_text}" (${h.clue_number})</div>`).join('') : '';
             hist.scrollTop = hist.scrollHeight;
