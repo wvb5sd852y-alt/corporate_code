@@ -30,25 +30,21 @@
         .search-container { flex-grow: 1; display: flex; align-items: center; justify-content: center; gap: 10px; }
         .nav-arrows { display: flex; gap: 12px; color: var(--icon-grey); margin-right: 10px; }
         .nav-arrows svg { cursor: pointer; opacity: 0.6; }
-        .nav-arrows svg:hover { opacity: 1; }
         
         .search-bar-vscode { background: #3c3c3c; border: 1px solid #666; border-radius: 4px; width: 450px; height: 22px; display: flex; align-items: center; padding: 0 10px; color: #888; font-size: 11px; }
 
         .window-controls { display: flex; height: 100%; width: 135px; justify-content: flex-end; }
         .win-btn { width: 45px; display: flex; align-items: center; justify-content: center; cursor: default; }
         .win-btn:hover { background: #333; }
-        .win-btn.close:hover { background: #e81123; }
 
         .layout-middle { display: flex; flex-grow: 1; overflow: hidden; }
 
-        /* ACTIVITY BAR (ICÔNES GRISES/BLANCHES) */
         .activity-bar { width: 48px; background: var(--bg-activity); display: flex; flex-direction: column; align-items: center; padding: 10px 0; gap: 15px; border-right: 1px solid var(--border); flex-shrink: 0; }
         .act-icon { width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--icon-grey); }
         .act-icon:hover { color: #fff; }
         .act-icon.active { color: #fff; border-left: 2px solid #fff; }
         .act-icon svg { width: 24px; height: 24px; }
 
-        /* SIDEBAR */
         .sidebar { width: 260px; background: var(--bg-sidebar); display: flex; flex-direction: column; flex-shrink: 0; border-right: 1px solid var(--border); }
         .sidebar-header { padding: 10px 20px; font-size: 11px; color: #bbbbbb; text-transform: uppercase; font-weight: bold; border-bottom: 1px solid #333; }
         .file-tree { padding: 5px 0; color: #cccccc; overflow-y: auto; flex-grow: 1; }
@@ -79,11 +75,15 @@
         .assassin .val { color: #f44747 !important; font-weight: bold; }
         .assassin::after { content: " // FATAL_ERROR"; color: #f44747; font-size: 11px; }
 
+        /* TERMINAL PANEL */
         .terminal-panel { height: 220px; background: var(--bg-terminal); border-top: 1px solid var(--border); display: flex; flex-direction: column; }
-        .terminal-tabs { background: var(--bg-main); display: flex; padding: 0 20px; gap: 20px; height: 30px; align-items: center; border-bottom: 1px solid #2d2d2d; font-size: 11px; color: #858585; }
+        .terminal-tabs { background: var(--bg-main); display: flex; padding: 0 20px; height: 30px; align-items: center; border-bottom: 1px solid #2d2d2d; font-size: 11px; color: #858585; position: relative; }
+        .terminal-tabs-left { display: flex; gap: 20px; }
+        .terminal-tab { cursor: pointer; text-transform: uppercase; padding: 8px 0; }
         .terminal-tab.active { color: #fff; border-bottom: 1px solid #fff; }
-        .terminal-content { flex-grow: 1; padding: 12px 20px; overflow-y: auto; font-family: 'Consolas', monospace; font-size: 12px; color: #cccccc; }
+        .terminal-tabs-right { margin-left: auto; display: flex; gap: 20px; }
         
+        .terminal-content { flex-grow: 1; padding: 12px 20px; overflow-y: auto; font-family: 'Consolas', monospace; font-size: 12px; color: #cccccc; }
         .history-log { color: #a0a0a0; margin-bottom: 4px; border-bottom: 1px solid #222; }
         .term-prompt { color: #6a9955; font-weight: bold; }
 
@@ -104,9 +104,7 @@
         </div>
         <div class="search-container">
             <div class="nav-arrows">
-                <!-- Flèche Gauche -->
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor"><path d="M10 12.5L5.5 8 10 3.5" stroke-width="1.2"/></svg>
-                <!-- Flèche Droite -->
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" style="opacity:0.3;"><path d="M6 12.5L10.5 8 6 3.5" stroke-width="1.2"/></svg>
             </div>
             <div class="search-bar-vscode">word_matrix.json — duo-embedded-systems</div>
@@ -120,13 +118,9 @@
 
     <div class="layout-middle">
         <div class="activity-bar">
-            <!-- Explorer Icon -->
             <div class="act-icon active"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg></div>
-            <!-- Source Control Icon -->
             <div class="act-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M18 15c-.58 0-1.11.23-1.5.6l-5.1-3.1a3 3 0 000-1l5.1-3.1c.39.37.92.6 1.5.6a3 3 0 100-6 3 3 0 00-3 3c0 .17.02.34.05.5L9.9 9.6c-.39-.37-.92-.6-1.5-.6a3 3 0 100 6c.58 0 1.11-.23 1.5-.6l5.1 3.1c-.03.16-.05.33-.05.5a3 3 0 103-3z"/></svg></div>
-            <!-- Debug Icon -->
             <div class="act-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 7h-2.1c-.2-.5-.5-.9-.8-1.3l1.4-1.4-1.4-1.4-2.2 2.2c-.6-.4-1.2-.7-1.9-.9V2h-2v2.2c-.7.2-1.3.5-1.9.9L5.9 2.9 4.5 4.3l1.4 1.4c-.3.4-.6.8-.8 1.3H3v2h2.1c0 .3-.1.7-.1 1H3v2h2.1c0 .3.1.7.1 1H3v2h2.1c.2.5.5.9.8 1.3l-1.4 1.4 1.4 1.4 2.2-2.2c.6.4 1.2.7 1.9.9V22h2v-2.2c.7-.2 1.3-.5 1.9-.9l2.2 2.2 1.4-1.4-1.4-1.4c.3-.4.6-.8.8-1.3H19v-2h-2.1c0-.3.1-.7.1-1H19v-2h-2.1c0-.3-.1-.7-.1-1H19V7zm-6 8h-2v-2h2v2zm0-4h-2V9h2v2z"/></svg></div>
-            <!-- User Icon -->
             <div class="act-icon" style="margin-top: auto;"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg></div>
         </div>
 
@@ -162,7 +156,15 @@
 
             <div class="terminal-panel">
                 <div class="terminal-tabs">
-                    <div class="terminal-tab active">TERMINAL</div>
+                    <div class="terminal-tabs-left">
+                        <div class="terminal-tab">Problems</div>
+                        <div class="terminal-tab">Output</div>
+                        <div class="terminal-tab">Debug Console</div>
+                        <div class="terminal-tab active">Terminal</div>
+                    </div>
+                    <div class="terminal-tabs-right">
+                        <div class="terminal-tab">Ports</div>
+                    </div>
                 </div>
                 <div class="terminal-content">
                     <div id="clueHistory" style="overflow-y: auto; flex-grow: 1;"></div>
