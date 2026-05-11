@@ -10,163 +10,151 @@
             --bg-main: #1e1e1e;
             --bg-sidebar: #252526;
             --bg-activity: #333333;
+            --bg-terminal: #181818; /* Gris très foncé, pas noir pur */
             --text-main: #d4d4d4;
             --vscode-blue: #007acc;
             --border: #333333;
+            --syntax-key: #9cdcfe;
             --syntax-string: #ce9178;
+            --syntax-keyword: #c586c0;
+            --syntax-comment: #6a9955;
+            --icon-grey: #858585;
         }
 
-        body { background: var(--bg-darker); color: var(--text-main); font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; display: flex; flex-direction: column; height: 100vh; font-size: 13px; overflow: hidden; }
+        body { background: var(--bg-darker); color: var(--text-main); font-family: 'Segoe UI', sans-serif; margin: 0; display: flex; flex-direction: column; height: 100vh; font-size: 13px; overflow: hidden; }
 
-        /* MENU BAR */
-        .top-menu { background: var(--bg-darker); height: 30px; display: flex; align-items: center; padding: 0 10px; gap: 15px; font-size: 12px; color: #ccc; flex-shrink: 0; }
-        .top-menu span:hover { color: #fff; cursor: default; }
-        .search-bar-vscode { background: #3c3c3c; border: 1px solid #666; border-radius: 4px; width: 400px; height: 20px; margin: 0 auto; display: flex; align-items: center; padding: 0 10px; color: #888; font-size: 11px; }
+        /* TOP BAR */
+        .top-menu { background: var(--bg-darker); height: 35px; display: flex; align-items: center; padding: 0; flex-shrink: 0; }
+        .menu-items { display: flex; gap: 12px; padding: 0 10px; font-size: 12px; color: #bbb; width: 240px; }
+        .search-container { flex-grow: 1; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .search-bar-vscode { background: #3c3c3c; border: 1px solid #666; border-radius: 4px; width: 450px; height: 22px; display: flex; align-items: center; padding: 0 10px; color: #888; font-size: 11px; }
+        .window-controls { display: flex; height: 100%; width: 135px; justify-content: flex-end; }
+        .win-btn { width: 45px; display: flex; align-items: center; justify-content: center; cursor: default; }
+        .win-btn:hover { background: #333; }
+        .win-btn.close:hover { background: #e81123; }
 
-        /* MAIN CONTAINER */
-        .layout { display: flex; flex-grow: 1; overflow: hidden; }
+        /* LAYOUT */
+        .layout-middle { display: flex; flex-grow: 1; overflow: hidden; }
+        .activity-bar { width: 48px; background: var(--bg-activity); display: flex; flex-direction: column; align-items: center; padding: 10px 0; gap: 15px; border-right: 1px solid var(--border); flex-shrink: 0; }
+        .act-icon { width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--icon-grey); }
+        .act-icon.active { color: #fff; border-left: 2px solid #fff; }
 
-        /* ACTIVITY BAR (Icônes verticales) */
-        .activity-bar { width: 50px; background: var(--bg-activity); display: flex; flex-direction: column; align-items: center; padding-top: 10px; gap: 20px; border-right: 1px solid var(--border); }
-        .activity-icon { color: #858585; font-size: 24px; cursor: pointer; }
-        .activity-icon.active { color: #fff; border-left: 2px solid #fff; width: 100%; text-align: center; }
+        .sidebar { width: 260px; background: var(--bg-sidebar); display: flex; flex-direction: column; flex-shrink: 0; border-right: 1px solid var(--border); }
+        .sidebar-header { padding: 10px 20px; font-size: 11px; color: #bbbbbb; text-transform: uppercase; font-weight: bold; }
+        .file-tree { padding: 5px 0; color: #cccccc; overflow-y: auto; flex-grow: 1; }
+        .tree-item { display: flex; align-items: center; padding: 3px 15px; cursor: pointer; gap: 6px; white-space: nowrap; }
+        .tree-item:hover { background: #2a2d2e; }
+        .tree-item.active { background: #37373d; color: #fff; }
 
-        /* SIDEBAR (Explorateur) */
-        .sidebar { width: 220px; background: var(--bg-sidebar); display: flex; flex-direction: column; flex-shrink: 0; }
-        .sidebar-header { padding: 10px 20px; font-size: 11px; font-weight: bold; color: #bbbbbb; text-transform: uppercase; }
-        .file-tree { padding-left: 10px; color: #cccccc; line-height: 22px; }
-        .folder { color: #569cd6; font-weight: bold; }
-        .file { padding-left: 15px; cursor: pointer; }
-        .file:hover { background: #2a2d2e; }
-        .file.active { background: #37373d; color: #fff; }
-
-        /* EDITOR AREA */
+        /* ÉDITEUR (JSON MODE) */
         .main-content { flex-grow: 1; display: flex; flex-direction: column; background: var(--bg-main); overflow: hidden; }
-        
         .tabs { background: var(--bg-sidebar); display: flex; height: 35px; align-items: center; flex-shrink: 0; }
-        .tab { padding: 0 15px; background: var(--bg-sidebar); color: #969696; border-right: 1px solid var(--bg-darker); height: 100%; display: flex; align-items: center; gap: 8px; font-size: 12px; }
+        .tab { padding: 0 12px; background: var(--bg-sidebar); color: #969696; border-right: 1px solid var(--bg-darker); height: 100%; display: flex; align-items: center; gap: 8px; font-size: 12px; cursor: pointer; }
         .tab.active { background: var(--bg-main); color: #fff; border-top: 1px solid var(--vscode-blue); }
-        .tab .close { font-size: 10px; margin-left: 5px; }
 
-        .editor-header-actions { margin-left: auto; display: flex; gap: 15px; padding-right: 15px; }
+        .code-area { flex-grow: 1; padding: 25px 45px; overflow-y: auto; line-height: 1.5; font-family: 'Consolas', 'Courier New', monospace; }
+        .json-bracket { color: #ffd700; }
+        .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px 40px; margin: 10px 0 10px 20px; }
+        .word-row { cursor: pointer; white-space: nowrap; padding: 2px 5px; border-radius: 3px; border-left: 2px solid transparent; }
+        .word-row:hover { background: #2a2d2e; }
+        .key { color: var(--syntax-key); }
+        .val { color: var(--syntax-string); }
+        
+        /* ÉTATS DU JEU */
+        .agent .val { color: var(--syntax-comment) !important; font-style: italic; }
+        .agent::after { content: " // OK_SYNC"; color: var(--syntax-comment); font-size: 11px; }
+        .civil { opacity: 0.3; }
+        .civil .val { text-decoration: line-through; }
+        .assassin .val { color: #f44747 !important; font-weight: bold; }
+        .assassin::after { content: " // FATAL_ERROR"; color: #f44747; font-size: 11px; }
 
-        /* GRID / CODE */
-        .code-area { flex-grow: 1; padding: 20px 40px; overflow-y: auto; line-height: 1.6; }
-        .grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin: 20px 0; }
-        .word { border: 1px solid #3c3c3c; padding: 12px 8px; cursor: pointer; color: var(--syntax-string); border-left: 3px solid transparent; font-family: 'Consolas', monospace; font-size: 12px; }
-        .word:hover { background: #2a2d2e; }
-
-        /* TERMINAL */
-        .terminal-panel { height: 200px; background: var(--bg-main); border-top: 1px solid var(--border); display: flex; flex-direction: column; }
-        .terminal-tabs { background: var(--bg-main); display: flex; padding: 0 20px; gap: 20px; height: 30px; align-items: center; border-bottom: 1px solid #2d2d2d; font-size: 11px; }
+        /* TERMINAL (COULEUR RÉALISTE) */
+        .terminal-panel { height: 220px; background: var(--bg-terminal); border-top: 1px solid var(--border); display: flex; flex-direction: column; }
+        .terminal-tabs { background: var(--bg-main); display: flex; padding: 0 20px; gap: 20px; height: 30px; align-items: center; border-bottom: 1px solid #2d2d2d; font-size: 11px; color: #858585; }
         .terminal-tab.active { color: #fff; border-bottom: 1px solid #fff; }
-        
-        .terminal-content { flex-grow: 1; padding: 10px 20px; overflow-y: auto; font-family: 'Consolas', monospace; }
-        .history-log { font-size: 11px; margin-bottom: 3px; border-bottom: 1px solid #252526; }
-        .hist-agent { color: #6a9955; }
-        .hist-civil { color: #808080; text-decoration: line-through; }
-        .hist-assassin { color: #f44747; }
+        .terminal-content { flex-grow: 1; padding: 12px 20px; overflow-y: auto; font-family: 'Consolas', monospace; font-size: 12px; color: #cccccc; }
+        .term-prompt { color: #6a9955; font-weight: bold; }
 
-        /* UTILS */
-        .deploy-btn { background: var(--vscode-blue); color: white; border: none; padding: 3px 10px; font-size: 11px; cursor: pointer; border-radius: 2px; }
-        .deploy-btn:disabled { background: #3e3e42; color: #858585; }
+        /* BOUTONS & STATUS */
+        .deploy-btn { background: var(--vscode-blue); color: white; border: none; padding: 4px 12px; font-size: 11px; cursor: pointer; border-radius: 2px; }
+        .status-bar { background: var(--vscode-blue); color: white; padding: 0 12px; font-size: 11px; height: 22px; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; width: 100%; box-sizing: border-box; }
         
-        .agent { color: #6a9955 !important; font-style: italic; border-color: #6a9955 !important; background: rgba(106, 153, 85, 0.1); pointer-events: none; }
-        .civil { opacity: 0.4; text-decoration: line-through; border-color: #333 !important; }
-        .assassin { color: #f44747 !important; font-weight: bold; border-color: #f44747 !important; background: rgba(244, 71, 71, 0.4) !important; pointer-events: none; }
-        .hint-green { border-left: 3px solid #6a9955 !important; }
-        .hint-black { border-left: 3px solid #f44747 !important; }
-        .not-your-turn { opacity: 0.6; pointer-events: none; filter: grayscale(0.5); }
-
-        .status-bar { background: var(--vscode-blue); color: white; padding: 0 10px; font-size: 11px; height: 22px; display: flex; justify-content: space-between; align-items: center; }
+        .hint-green { border-left: 2px solid #3e5a30; }
+        .hint-black { border-left: 2px solid #4a1c1c; }
+        .not-your-turn { opacity: 0.6; pointer-events: none; }
     </style>
 </head>
 <body>
 
-    <!-- TOP MENU BAR -->
     <div class="top-menu">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/9/9a/Visual_Studio_Code_1.35_icon.svg" width="15" alt="vs">
-        <span>File</span> <span>Edit</span> <span>Selection</span> <span>View</span> <span>Go</span> <span>Run</span> <span>Terminal</span> <span>Help</span>
-        <div class="search-bar-vscode">word_matrix.json — VS Code [Local]</div>
+        <div class="menu-items">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/9/9a/Visual_Studio_Code_1.35_icon.svg" width="16" style="margin-right: 5px;">
+            <span>File</span> <span>Edit</span> <span>Selection</span> <span>View</span>
+        </div>
+        <div class="search-container">
+            <div class="search-bar-vscode">word_matrix.json — duo-embedded-systems</div>
+        </div>
+        <div class="window-controls">
+            <div class="win-btn"><svg width="10" height="10" stroke="#fff"><line x1="0" y1="5" x2="10" y2="5"/></svg></div>
+            <div class="win-btn"><svg width="10" height="10" stroke="#fff" fill="none"><rect x="1" y="1" width="8" height="8"/></svg></div>
+            <div class="win-btn close"><svg width="10" height="10" stroke="#fff"><line x1="0" y1="0" x2="10" y2="10"/><line x1="10" y1="0" x2="0" y2="10"/></svg></div>
+        </div>
     </div>
 
-    <div class="layout">
-        <!-- ACTIVITY BAR -->
+    <div class="layout-middle">
         <div class="activity-bar">
-            <div class="activity-icon active">📄</div>
-            <div class="activity-icon">🔍</div>
-            <div class="activity-icon">🌿</div>
-            <div class="activity-icon">🐞</div>
-            <div class="activity-icon">🧩</div>
+            <div class="act-icon active"><svg viewBox="0 0 24 24" width="24" fill="currentColor"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg></div>
+            <div class="act-icon"><svg viewBox="0 0 24 24" width="24" fill="currentColor"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg></div>
+            <div class="act-icon" style="margin-top: auto;"><svg viewBox="0 0 24 24" width="24" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg></div>
         </div>
 
-        <!-- SIDEBAR (Explorateur) -->
         <div class="sidebar">
-            <div class="sidebar-header">Explorer</div>
+            <div class="sidebar-header">Explorer: DUO_SYSTEM</div>
             <div class="file-tree">
-                <div><span class="folder">⌄</span> DUO_PROJECT</div>
-                <div style="padding-left: 10px;"><span class="folder">⌄</span> node_modules</div>
-                <div style="padding-left: 10px;"><span class="folder">⌄</span> public</div>
-                <div style="padding-left: 10px;"><span class="folder">⌄</span> src</div>
-                <div class="file" style="padding-left: 25px;">App.js</div>
-                <div class="file active" style="padding-left: 25px;">word_matrix.json</div>
-                <div class="file" style="padding-left: 25px;">index.css</div>
-                <div class="file" style="padding-left: 10px;">package.json</div>
-                <div class="file" style="padding-left: 10px;">README.md</div>
+                <div class="tree-item"><span style="color:#e37933">⌄</span> src</div>
+                <div class="tree-item active" style="padding-left:30px;"><span style="color:#cbcb41">{}</span> word_matrix.json</div>
+                <div class="tree-item" style="padding-left:30px;"><span style="color:#519aba">TS</span> hardware.ts</div>
             </div>
         </div>
 
-        <!-- MAIN EDITOR -->
         <div class="main-content">
             <div class="tabs">
-                <div class="tab">index.css <span class="close">×</span></div>
-                <div class="tab">package.json <span class="close">×</span></div>
-                <div class="tab active">word_matrix.json <span class="close">×</span></div>
-                <div class="editor-header-actions">
-                    <button id="newGameBtn" class="deploy-btn" style="background:#6a9955; display:none;">INITIALIZE_KERNEL</button>
-                    <button id="endTurnBtn" class="deploy-btn">COMMIT_CHANGES</button>
+                <div class="tab">hardware.ts</div>
+                <div class="tab active">word_matrix.json</div>
+                <div style="margin-left: auto; padding-right: 15px;">
+                    <button id="newGameBtn" class="deploy-btn" style="background:#4a7a3c; display:none;">INITIALIZE_CORE</button>
+                    <button id="endTurnBtn" class="deploy-btn">PUSH_CHANGES</button>
                 </div>
             </div>
 
             <div class="code-area">
-                <div style="color: #6a9955; margin-bottom: 10px;">// Synchronizing with remote master branch...</div>
-                <div class="grid" id="board">... BOOTING_SYSTEM ...</div>
+                <div><span class="syntax-keyword">export const</span> <span class="key">nodes</span> = <span class="json-bracket">[</span></div>
+                <div class="grid" id="board">... SYNCING ...</div>
+                <div><span class="json-bracket">]</span>;</div>
             </div>
 
-            <!-- TERMINAL -->
             <div class="terminal-panel">
                 <div class="terminal-tabs">
-                    <div class="terminal-tab">PROBLEMS</div>
-                    <div class="terminal-tab">OUTPUT</div>
-                    <div class="terminal-tab">DEBUG CONSOLE</div>
                     <div class="terminal-tab active">TERMINAL</div>
+                    <div class="terminal-tab">DEBUG CONSOLE</div>
+                    <div class="terminal-tab">OUTPUT</div>
                 </div>
                 <div class="terminal-content">
-                    <div id="clueHistory" style="flex-grow: 1; overflow-y: auto;"></div>
-                    <div style="display:flex; gap:10px; align-items:center; border-top:1px solid #333; padding-top:5px;">
-                        <span style="color:#6a9955">antoine@laptop:~/duo$</span>
-                        <span>./push_clue --val</span>
-                        <input type="text" id="clueText" style="background:transparent; border:none; color:#ce9178; outline:none; width:120px;" placeholder='"..."'>
-                        <span>--n</span>
-                        <input type="number" id="clueNum" style="background:transparent; border:none; color:#ce9178; width:30px;" value="1">
-                        <button id="sendClueBtn" class="deploy-btn" style="background:#333; border:1px solid #555;">RUN</button>
+                    <div id="clueHistory"></div>
+                    <div style="display:flex; gap:12px; align-items:center; margin-top:10px;">
+                        <span class="term-prompt">antoine@toulouse:~$</span>
+                        <input type="text" id="clueText" style="background:transparent; border:none; color:#ce9178; outline:none; width:130px; font-family:inherit;" placeholder='"string"'>
+                        <input type="number" id="clueNum" style="background:transparent; border:none; color:#ce9178; width:30px; font-family:inherit;" value="1">
+                        <button id="sendClueBtn" class="deploy-btn" style="background:#333; border:1px solid #444;">EXEC</button>
                     </div>
                 </div>
             </div>
-
-            <!-- STATUS BAR -->
-            <div class="status-bar" id="statusBar">
-                <div>
-                    <span style="margin-right: 15px;">🌿 master*</span>
-                    <span>0 △ 0 ▽ 1</span>
-                </div>
-                <div>
-                    <span id="turnIndicator" style="margin-right: 15px;">Initializing...</span>
-                    <span>UTF-8</span>
-                    <span style="margin-left: 15px;">JSON</span>
-                </div>
-            </div>
         </div>
+    </div>
+
+    <div class="status-bar" id="statusBar">
+        <div><span>🌿 master*</span><span style="margin-left:15px;">0 △ 0 ▽</span></div>
+        <div><span id="turnIndicator">...</span><span style="margin-left:15px;">UTF-8</span><span style="margin-left:15px;">JSON</span></div>
     </div>
 
     <script>
@@ -217,31 +205,37 @@
                 const { data: words } = await mySupabase.from('game_state').select('*').order('id', { ascending: true });
                 const { data: hints } = await mySupabase.from('game_hints').select('*').order('created_at', { ascending: true });
                 if (!words || words.length === 0) { document.getElementById('newGameBtn').style.display = 'inline-block'; return; }
+                
                 const isGameOver = words.some(w => w.status_a === 'assassin' || w.status_b === 'assassin');
                 const allFound = words.filter(w => w.status_a === 'agent' || w.status_b === 'agent').length >= 15;
                 const isMyTurn = ctrl.current_turn === myRole;
 
                 document.getElementById('newGameBtn').style.display = (isGameOver || allFound) ? 'inline-block' : 'none';
-                document.getElementById('statusBar').style.background = isGameOver ? "#e51400" : (allFound ? "#6a9955" : "#007acc");
-                document.getElementById('turnIndicator').innerText = isGameOver ? "CRITICAL FAILURE" : (allFound ? "DEPLOYED" : `ACTIVE_TURN: ${ctrl.current_turn}`);
+                document.getElementById('statusBar').style.background = isGameOver ? "#e51400" : (allFound ? "#4a7a3c" : "#007acc");
+                document.getElementById('turnIndicator').innerText = isGameOver ? "FATAL_ERROR" : (allFound ? "STATUS_OK" : `ROLE_${ctrl.current_turn}_ACTIVE`);
                 
                 const board = document.getElementById('board');
                 board.className = (isMyTurn && !isGameOver) ? "grid" : "grid not-your-turn";
                 board.innerHTML = '';
-                words.forEach(item => {
-                    const div = document.createElement('div');
-                    div.className = 'word';
-                    div.innerText = `"${item.word}",`;
+                
+                words.forEach((item, i) => {
+                    const row = document.createElement('div');
+                    row.className = 'word-row';
+                    const idStr = (i + 1).toString().padStart(2, '0');
+                    row.innerHTML = `<span class="key">"node_${idStr}"</span>: <span class="val">"${item.word}"</span>,`;
+                    
                     const statusMe = (myRole === 'A') ? item.status_a : item.status_b;
-                    if(item.status_a === 'assassin' || item.status_b === 'assassin') div.classList.add('assassin');
-                    else if(item.status_a === 'agent' || item.status_b === 'agent') div.classList.add('agent');
-                    else if(statusMe === 'civil') div.classList.add('civil');
+                    if(item.status_a === 'assassin' || item.status_b === 'assassin') row.classList.add('assassin');
+                    else if(item.status_a === 'agent' || item.status_b === 'agent') row.classList.add('agent');
+                    else if(statusMe === 'civil') row.classList.add('civil');
+                    
                     const viewMe = (myRole === 'A') ? item.role_a_view : item.role_b_view;
-                    if(!div.classList.contains('agent') && !div.classList.contains('assassin')){
-                        if(viewMe === 'green') div.classList.add('hint-green');
-                        if(viewMe === 'black') div.classList.add('hint-black');
+                    if(!row.classList.contains('agent') && !row.classList.contains('assassin')){
+                        if(viewMe === 'green') row.classList.add('hint-green');
+                        if(viewMe === 'black') row.classList.add('hint-black');
                     }
-                    div.onclick = async () => {
+
+                    row.onclick = async () => {
                         const otherView = (myRole === 'A') ? item.role_b_view : item.role_a_view;
                         let res = 'civil';
                         if(otherView === 'green') res = 'agent';
@@ -254,12 +248,12 @@
                         await mySupabase.from('game_state').update((myRole === 'A') ? {status_a: res} : {status_b: res}).eq('id', item.id);
                         if(res === 'civil') document.getElementById('endTurnBtn').click();
                     };
-                    board.appendChild(div);
+                    board.appendChild(row);
                 });
+
                 const hist = document.getElementById('clueHistory');
                 hist.innerHTML = hints ? hints.map(h => {
-                    const wordsArr = h.revealed_words ? h.revealed_words.split(',').map(w => `<span class="hist-${w.split(':')[1]}">${w.split(':')[0]}</span>`).join(' ') : '...';
-                    return `<div class="history-log">${h.sent_by}@master: ${h.clue_text} (${h.clue_number}) -> ${wordsArr}</div>`;
+                    return `<div class="history-log">// [LOG] clue: "${h.clue_text}" (${h.clue_number})</div>`;
                 }).join('') : '';
                 hist.scrollTop = hist.scrollHeight;
             }
