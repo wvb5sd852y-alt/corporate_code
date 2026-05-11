@@ -48,33 +48,50 @@
         </div>
     </div>
 
-    <script>
-        // REMPLACE AVEC TES CLES SUPABASE
-        const SUPABASE_URL = 'https://ftvxmlxdovbgcxdayzvn.supabase.co';
-        const SUPABASE_KEY = 'sb_publishable_VtSjBXRL5EvJwHZSK0G4Yw_-z1eK8Fu';
-        const supabase = lib.createClient(SUPABASE_URL, SUPABASE_KEY);
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+    // On change le nom ici pour éviter le conflit
+    const SUPABASE_URL = 'https://ftvxmlxdovbgcxdayzvn.supabase.co'; 
+    const SUPABASE_KEY = 'sb_publishable_VtSjBXRL5EvJwHZSK0G4Yw_-z1eK8Fu';
 
-        async function loadGame() {
-            const { data } = await supabase.from('game_state').select('*');
-            const board = document.getElementById('board');
-            board.innerHTML = '';
-            data.forEach(item => {
-                const div = document.createElement('div');
-                div.className = `word ${item.status}`;
-                div.innerText = `"${item.word}"`;
-                div.onclick = () => updateWord(item.id, 'agent'); // Change selon le clic
-                board.appendChild(div);
-            });
+    // On utilise "mySupabase" au lieu de "supabase"
+    const mySupabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    async function loadGame() {
+        const { data, error } = await mySupabase
+            .from('game_state')
+            .select('*');
+
+        if (error) {
+            console.error('Erreur de connexion :', error.message);
+            return;
         }
 
-        async function updateWord(id, newStatus) {
-            await supabase.from('game_state').update({ status: newStatus }).eq('id', id);
-            loadGame();
-        }
+        const board = document.getElementById('board');
+        board.innerHTML = ''; 
 
-        // Rafraîchissement automatique toutes les 2 secondes
-        setInterval(loadGame, 2000);
-        loadGame();
-    </script>
+        data.forEach(item => {
+            const div = document.createElement('div');
+            div.className = `word ${item.status}`;
+            div.innerText = `"${item.word}",`; 
+            
+            div.onclick = async () => {
+                // Si neutre -> devient agent. Si agent -> revient neutre.
+                const nextStatus = (item.status === 'neutral') ? 'agent' : 'neutral';
+                
+                await mySupabase
+                    .from('game_state')
+                    .update({ status: nextStatus })
+                    .eq('id', item.id);
+                
+                loadGame(); 
+            };
+            board.appendChild(div);
+        });
+    }
+
+    setInterval(loadGame, 2000);
+    loadGame();
+</script>
 </body>
 </html>
