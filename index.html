@@ -6,36 +6,28 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         body { background: #1e1e1e; color: #d4d4d4; font-family: 'Consolas', monospace; margin: 0; display: flex; height: 100vh; font-size: 13px; overflow: hidden; flex-direction: row; }
-        
-        /* Sidebar */
         .sidebar { width: 200px; background: #252526; border-right: 1px solid #333; padding: 10px; flex-shrink: 0; }
-        
-        /* Main Editor Area */
         .main-content { flex-grow: 1; display: flex; flex-direction: column; height: 100vh; }
-        
-        /* Tabs */
         .tabs { background: #2d2d2d; display: flex; height: 35px; align-items: center; justify-content: space-between; padding-right: 10px; flex-shrink: 0; }
         .tab { padding: 0 20px; background: #1e1e1e; color: #fff; border-top: 1px solid #007acc; height: 100%; display: flex; align-items: center; }
         
-        /* Code Area */
         .code-area { flex-grow: 1; padding: 20px 40px; line-height: 1.6; overflow-y: auto; background: #1e1e1e; }
         .grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin: 20px 0; }
         .word { border: 1px solid #3c3c3c; padding: 15px 10px; cursor: pointer; color: #ce9178; border-left: 3px solid transparent; }
         .word:hover { background: #2a2d2e; }
 
         /* Terminal Panel */
-        .terminal-panel { height: 180px; background: #1e1e1e; border-top: 1px solid #333; display: flex; flex-direction: column; flex-shrink: 0; }
+        .terminal-panel { height: 220px; background: #1e1e1e; border-top: 1px solid #333; display: flex; flex-direction: column; flex-shrink: 0; }
         .terminal-tabs { background: #1e1e1e; display: flex; padding: 0 20px; gap: 20px; height: 30px; align-items: center; border-bottom: 1px solid #2d2d2d; }
         .terminal-tab { font-size: 11px; color: #858585; cursor: pointer; text-transform: uppercase; }
         .terminal-tab.active { color: #fff; border-bottom: 1px solid #fff; padding-bottom: 2px; }
         
-        .terminal-content { flex-grow: 1; padding: 10px 20px; font-family: 'Consolas', monospace; overflow-y: auto; }
-        .terminal-line { margin-bottom: 5px; color: #6a9955; }
-        .terminal-input-row { display: flex; align-items: center; gap: 8px; margin-top: 10px; color: #ccc; }
+        .terminal-content { flex-grow: 1; padding: 10px 20px; font-family: 'Consolas', monospace; overflow-y: auto; display: flex; flex-direction: column; }
+        .history-log { color: #808080; font-size: 11px; line-height: 1.4; margin-bottom: 10px; border-bottom: 1px solid #2d2d2d; padding-bottom: 5px; }
+        .terminal-input-row { display: flex; align-items: center; gap: 8px; margin-top: auto; color: #ccc; padding-top: 10px; }
         
-        /* Inputs déguisés en Terminal */
         .term-in { background: transparent; border: none; color: #ce9178; outline: none; font-family: inherit; font-size: 13px; }
-        .term-text { width: 250px; }
+        .term-text { width: 200px; }
         .term-num { width: 30px; }
         
         .deploy-btn { background: #007acc; color: white; border: none; padding: 4px 12px; font-size: 11px; cursor: pointer; border-radius: 2px; }
@@ -51,7 +43,6 @@
         .not-your-turn { opacity: 0.5; pointer-events: none; filter: grayscale(0.5); }
         .game-over-active { pointer-events: none !important; }
         
-        /* Footer */
         .status-bar { background: #007acc; color: white; padding: 2px 10px; font-size: 11px; height: 22px; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
         .status-bar.error { background: #f44747; }
         .syntax-purple { color: #c586c0; }
@@ -77,7 +68,6 @@
             ];
         </div>
 
-        <!-- Terminal Panel -->
         <div class="terminal-panel">
             <div class="terminal-tabs">
                 <div class="terminal-tab">Output</div>
@@ -85,11 +75,13 @@
                 <div class="terminal-tab active">Terminal</div>
             </div>
             <div class="terminal-content">
-                <div id="displayClue" class="terminal-line">system@vscode:~$ waiting for clue_stream...</div>
+                <div id="clueHistory" style="overflow-y: auto; flex-grow: 1;">
+                    <!-- L'historique apparaîtra ici -->
+                </div>
                 
-                <div class="terminal-input-row">
-                    <span>antoine@master:~$ ./send_clue --word</span>
-                    <input type="text" id="clueText" class="term-in term-text" placeholder='"string"' autofocus>
+                <div class="terminal-input-row" id="inputZone">
+                    <span>antoine@master:~$ ./push_clue --val</span>
+                    <input type="text" id="clueText" class="term-in term-text" placeholder='"string"'>
                     <span>--count</span>
                     <input type="number" id="clueNum" class="term-in term-num" min="1" max="8" value="1">
                     <button id="sendClueBtn" class="deploy-btn" style="background: #333; margin-left: 10px;">EXECUTE</button>
@@ -116,13 +108,14 @@
             const urlParams = new URLSearchParams(window.location.search);
             const myRole = (urlParams.get('role') || 'A').toUpperCase();
 
-            // Envoyer l'indice
+            // Envoyer l'indice (Nouvelle ligne dans la table)
             document.getElementById('sendClueBtn').onclick = async () => {
                 const text = document.getElementById('clueText').value.replace(/"/g, '');
                 const num = document.getElementById('clueNum').value;
                 if (!text) return;
-                await mySupabase.from('game_hints').update({ clue_text: text, clue_number: num, sent_by: myRole }).eq('id', 1);
+                await mySupabase.from('game_hints').insert([{ clue_text: text, clue_number: num, sent_by: myRole }]);
                 document.getElementById('clueText').value = '';
+                loadGame();
             };
 
             async function toggleTurn() {
@@ -136,9 +129,19 @@
                 const { data: ctrl } = await mySupabase.from('game_control').select('current_turn').eq('id', 1).single();
                 const isMyTurn = ctrl.current_turn === myRole;
 
-                const { data: hintData } = await mySupabase.from('game_hints').select('*').eq('id', 1).single();
-                if (hintData) {
-                    document.getElementById('displayClue').innerText = `[${new Date().toLocaleTimeString()}] INCOMING_DATA: { word: "${hintData.clue_text}", count: ${hintData.clue_number}, origin: "ROLE_${hintData.sent_by}" }`;
+                // Charger TOUT l'historique des indices
+                const { data: allHints } = await mySupabase.from('game_hints').select('*').order('created_at', { ascending: true });
+                const historyDiv = document.getElementById('clueHistory');
+                historyDiv.innerHTML = '';
+                if (allHints) {
+                    allHints.forEach(h => {
+                        const line = document.createElement('div');
+                        line.className = 'history-log';
+                        const time = new Date(h.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                        line.innerText = `[${time}] ROLE_${h.sent_by}: { clue: "${h.clue_text}", n: ${h.clue_number} }`;
+                        historyDiv.appendChild(line);
+                    });
+                    historyDiv.scrollTop = historyDiv.scrollHeight;
                 }
 
                 const { data: words } = await mySupabase.from('game_state').select('*').order('id', { ascending: true });
