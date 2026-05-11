@@ -37,6 +37,7 @@
         .hint-green { border-left: 3px solid #6a9955 !important; }
         .hint-black { border-left: 3px solid #f44747 !important; }
         .not-your-turn { opacity: 0.5; pointer-events: none; filter: grayscale(0.5); }
+        
         .status-bar { background: #007acc; color: white; padding: 2px 10px; font-size: 11px; height: 22px; display: flex; justify-content: space-between; align-items: center; }
         .status-bar.error { background: #f44747; }
     </style>
@@ -56,7 +57,7 @@
             <button id="endTurnBtn" class="deploy-btn">DEPLOY: COMMIT_CHANGES</button>
         </div>
         <div class="code-area">
-            <div class="grid" id="board">Synchronisation...</div>
+            <div class="grid" id="board">...</div>
         </div>
         <div class="terminal-panel">
             <div class="terminal-tabs"><div class="terminal-tab active">Terminal</div></div>
@@ -90,26 +91,21 @@
             const myRole = (new URLSearchParams(window.location.search).get('role') || 'A').toUpperCase();
 
             async function startNewGame() {
-                // 1. Piocher 25 mots au hasard
                 const { data: bank } = await mySupabase.from('word_bank').select('word');
                 const shuffled = bank.sort(() => 0.5 - Math.random()).slice(0, 25);
                 
-                // 2. Création de la logique Duo (9 verts chacun, dont 3 en commun)
                 const roles = Array(25).fill(null).map(() => ({ a: 'neutral', b: 'neutral' }));
                 const indices = [...Array(25).keys()].sort(() => 0.5 - Math.random());
                 
-                indices.slice(0, 3).forEach(i => { roles[i].a = 'green'; roles[i].b = 'green'; }); // 3 communs
-                indices.slice(3, 9).forEach(i => { roles[i].a = 'green'; }); // 6 propres à A
-                indices.slice(9, 15).forEach(i => { roles[i].b = 'green'; }); // 6 propres à B
-                roles[indices[15]].a = 'black'; roles[indices[16]].b = 'black'; // Assassins
-                roles[indices[17]].a = 'black'; roles[indices[17]].b = 'black'; // Assassin commun
+                indices.slice(0, 3).forEach(i => { roles[i].a = 'green'; roles[i].b = 'green'; }); 
+                indices.slice(3, 9).forEach(i => { roles[i].a = 'green'; }); 
+                indices.slice(9, 15).forEach(i => { roles[i].b = 'green'; }); 
+                roles[indices[15]].a = 'black'; roles[indices[16]].b = 'black'; 
+                roles[indices[17]].a = 'black'; roles[indices[17]].b = 'black'; 
 
                 const newBoard = shuffled.map((w, i) => ({
-                    word: w.word,
-                    role_a_view: roles[i].a,
-                    role_b_view: roles[i].b,
-                    status_a: 'neutral',
-                    status_b: 'neutral'
+                    word: w.word, role_a_view: roles[i].a, role_b_view: roles[i].b,
+                    status_a: 'neutral', status_b: 'neutral'
                 }));
 
                 await mySupabase.from('game_state').delete().neq('id', 0);
@@ -136,6 +132,8 @@
                 const { data: words } = await mySupabase.from('game_state').select('*').order('id', { ascending: true });
                 const { data: hints } = await mySupabase.from('game_hints').select('*').order('created_at', { ascending: true });
                 
+                if (!words || words.length === 0) return;
+
                 const isGameOver = words.some(w => w.status_a === 'assassin' || w.status_b === 'assassin');
                 const allFound = words.filter(w => w.status_a === 'agent' || w.status_b === 'agent').length >= 15;
                 
@@ -152,12 +150,13 @@
                     div.className = 'word';
                     div.innerText = `"${item.word}",`;
                     const statusMe = (myRole === 'A') ? item.status_a : item.status_b;
+                    
                     if(item.status_a === 'assassin' || item.status_b === 'assassin') div.classList.add('assassin');
                     else if(item.status_a === 'agent' || item.status_b === 'agent') div.classList.add('agent');
                     else if(statusMe === 'civil') div.classList.add('civil');
                     
-                    const viewMe = (myRole === 'A') ? item.role_a_view : item.role_b_view;
                     if(!div.classList.contains('agent') && !div.classList.contains('assassin')){
+                        const viewMe = (myRole === 'A') ? item.role_a_view : item.role_b_view;
                         if(viewMe === 'green') div.classList.add('hint-green');
                         if(viewMe === 'black') div.classList.add('hint-black');
                     }
@@ -183,6 +182,7 @@
                     const wordsArr = h.revealed_words ? h.revealed_words.split(',').map(w => `<span class="hist-${w.split(':')[1]}">${w.split(':')[0]}</span>`).join(' ') : '';
                     return `<div class="history-log">ROLE_${h.sent_by}: ${h.clue_text} (${h.clue_number}) -> ${wordsArr}</div>`;
                 }).join('') : '';
+                hist.scrollTop = hist.scrollHeight;
             }
             setInterval(loadGame, 2000); loadGame();
         }
