@@ -23,14 +23,16 @@
 
         .agent { color: #6a9955 !important; font-style: italic; border-color: #6a9955 !important; background: rgba(106, 153, 85, 0.1); pointer-events: none; }
         .civil { opacity: 0.4; text-decoration: line-through; border-color: #333 !important; }
-        .assassin { color: #f44747 !important; font-weight: bold; border-color: #f44747 !important; background: rgba(244, 71, 71, 0.2); pointer-events: none; }
+        .assassin { color: #f44747 !important; font-weight: bold; border-color: #f44747 !important; background: rgba(244, 71, 71, 0.4); pointer-events: none; }
         
         .hint-green { border-left: 3px solid #6a9955 !important; }
         .hint-black { border-left: 3px solid #f44747 !important; }
 
         .not-your-turn { opacity: 0.5; pointer-events: none; filter: grayscale(0.5); }
+        .game-over-active { pointer-events: none !important; opacity: 0.8; }
         
-        .status-bar { background: #007acc; color: white; padding: 2px 10px; font-size: 11px; position: fixed; bottom: 0; width: 100%; display: flex; justify-content: space-between; }
+        .status-bar { background: #007acc; color: white; padding: 2px 10px; font-size: 11px; position: fixed; bottom: 0; width: 100%; display: flex; justify-content: space-between; transition: background 0.3s; }
+        .status-bar.error { background: #f44747; }
         .syntax-purple { color: #c586c0; }
         .syntax-blue { color: #569cd6; }
     </style>
@@ -48,12 +50,12 @@
         </div>
         <div class="code-area">
             <span class="syntax-purple">export</span> <span class="syntax-blue">const</span> nodes = [
-            <div class="grid" id="board">Synchronisation...</div>
+            <div class="grid" id="board">Initialisation...</div>
             ];
         </div>
     </div>
-    <div class="status-bar">
-        <span>Process: Connected</span>
+    <div class="status-bar" id="statusBar">
+        <span id="processText">Process: Connected</span>
         <span id="turnIndicator">Role: -</span>
     </div>
 
@@ -90,10 +92,25 @@
                 const board = document.getElementById('board');
                 const btn = document.getElementById('endTurnBtn');
                 const turnInd = document.getElementById('turnIndicator');
+                const statusBar = document.getElementById('statusBar');
+                const processText = document.getElementById('processText');
                 
-                board.className = isMyTurn ? "grid" : "grid not-your-turn";
-                btn.disabled = !isMyTurn;
-                turnInd.innerText = isMyTurn ? `ACTIVE SESSION: ROLE_${myRole}` : `WAITING: ROLE_${currentTurn}`;
+                // Vérifier si un assassin a été cliqué
+                const isGameOver = words.some(w => w.status_a === 'assassin' || w.status_b === 'assassin');
+
+                if (isGameOver) {
+                    board.className = "grid game-over-active";
+                    btn.disabled = true;
+                    statusBar.className = "status-bar error";
+                    processText.innerText = "Process: FATAL_ERROR (CORE_CORRUPTED)";
+                    turnInd.innerText = "STATUS: TERMINATED";
+                } else {
+                    board.className = isMyTurn ? "grid" : "grid not-your-turn";
+                    btn.disabled = !isMyTurn;
+                    statusBar.className = "status-bar";
+                    processText.innerText = "Process: Connected (Stable)";
+                    turnInd.innerText = isMyTurn ? `ACTIVE SESSION: ROLE_${myRole}` : `WAITING: ROLE_${currentTurn}`;
+                }
                 
                 board.innerHTML = ''; 
 
@@ -115,7 +132,7 @@
                     }
 
                     div.onclick = async () => {
-                        if (!isMyTurn || div.classList.contains('agent') || div.classList.contains('assassin')) return;
+                        if (!isMyTurn || isGameOver || div.classList.contains('agent') || div.classList.contains('assassin')) return;
 
                         const otherView = (myRole === 'A') ? item.role_b_view : item.role_a_view;
                         let res = 'civil'; 
