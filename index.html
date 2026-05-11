@@ -5,41 +5,54 @@
     <title>Visual Studio Code - word_matrix.json</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        body { background: #1e1e1e; color: #d4d4d4; font-family: 'Consolas', monospace; margin: 0; display: flex; height: 100vh; font-size: 13px; overflow: hidden; }
-        .sidebar { width: 200px; background: #252526; border-right: 1px solid #333; padding: 10px; }
-        .editor { flex-grow: 1; display: flex; flex-direction: column; background: #1e1e1e; }
-        .tabs { background: #2d2d2d; display: flex; height: 35px; align-items: center; justify-content: space-between; padding-right: 10px; }
+        body { background: #1e1e1e; color: #d4d4d4; font-family: 'Consolas', monospace; margin: 0; display: flex; height: 100vh; font-size: 13px; overflow: hidden; flex-direction: row; }
+        
+        /* Sidebar */
+        .sidebar { width: 200px; background: #252526; border-right: 1px solid #333; padding: 10px; flex-shrink: 0; }
+        
+        /* Main Editor Area */
+        .main-content { flex-grow: 1; display: flex; flex-direction: column; height: 100vh; }
+        
+        /* Tabs */
+        .tabs { background: #2d2d2d; display: flex; height: 35px; align-items: center; justify-content: space-between; padding-right: 10px; flex-shrink: 0; }
         .tab { padding: 0 20px; background: #1e1e1e; color: #fff; border-top: 1px solid #007acc; height: 100%; display: flex; align-items: center; }
         
-        /* Barre d'indices Camouflée */
-        .hint-bar { background: #333333; padding: 8px 20px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid #1e1e1e; font-size: 12px; }
-        .hint-input { background: #3c3c3c; border: 1px solid #555; color: #ce9178; padding: 4px 8px; font-family: inherit; }
-        .hint-text { width: 180px; }
-        .hint-num { width: 40px; }
-        .hint-display { color: #6a9955; font-style: italic; margin-left: 15px; border-left: 1px solid #555; padding-left: 15px; }
-
-        .deploy-btn { background: #007acc; color: white; border: none; padding: 4px 12px; font-size: 11px; cursor: pointer; border-radius: 2px; }
-        .deploy-btn:hover { background: #1f8ad2; }
-        .deploy-btn:disabled { background: #3e3e42; color: #858585; cursor: not-allowed; }
-
-        .code-area { padding: 20px 40px; line-height: 1.6; overflow-y: auto; }
+        /* Code Area */
+        .code-area { flex-grow: 1; padding: 20px 40px; line-height: 1.6; overflow-y: auto; background: #1e1e1e; }
         .grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin: 20px 0; }
         .word { border: 1px solid #3c3c3c; padding: 15px 10px; cursor: pointer; color: #ce9178; border-left: 3px solid transparent; }
         .word:hover { background: #2a2d2e; }
 
-        /* Couleurs de jeu */
+        /* Terminal Panel */
+        .terminal-panel { height: 180px; background: #1e1e1e; border-top: 1px solid #333; display: flex; flex-direction: column; flex-shrink: 0; }
+        .terminal-tabs { background: #1e1e1e; display: flex; padding: 0 20px; gap: 20px; height: 30px; align-items: center; border-bottom: 1px solid #2d2d2d; }
+        .terminal-tab { font-size: 11px; color: #858585; cursor: pointer; text-transform: uppercase; }
+        .terminal-tab.active { color: #fff; border-bottom: 1px solid #fff; padding-bottom: 2px; }
+        
+        .terminal-content { flex-grow: 1; padding: 10px 20px; font-family: 'Consolas', monospace; overflow-y: auto; }
+        .terminal-line { margin-bottom: 5px; color: #6a9955; }
+        .terminal-input-row { display: flex; align-items: center; gap: 8px; margin-top: 10px; color: #ccc; }
+        
+        /* Inputs déguisés en Terminal */
+        .term-in { background: transparent; border: none; color: #ce9178; outline: none; font-family: inherit; font-size: 13px; }
+        .term-text { width: 250px; }
+        .term-num { width: 30px; }
+        
+        .deploy-btn { background: #007acc; color: white; border: none; padding: 4px 12px; font-size: 11px; cursor: pointer; border-radius: 2px; }
+        .deploy-btn:disabled { background: #3e3e42; color: #858585; cursor: not-allowed; }
+
+        /* Status Colors */
         .agent { color: #6a9955 !important; font-style: italic; border-color: #6a9955 !important; background: rgba(106, 153, 85, 0.1); pointer-events: none; }
         .civil { opacity: 0.4; text-decoration: line-through; border-color: #333 !important; }
         .assassin { color: #f44747 !important; font-weight: bold; border-color: #f44747 !important; background: rgba(244, 71, 71, 0.4) !important; pointer-events: none; }
-        
         .hint-green { border-left: 3px solid #6a9955 !important; }
         .hint-black { border-left: 3px solid #f44747 !important; }
 
-        /* Verrouillage */
         .not-your-turn { opacity: 0.5; pointer-events: none; filter: grayscale(0.5); }
         .game-over-active { pointer-events: none !important; }
         
-        .status-bar { background: #007acc; color: white; padding: 2px 10px; font-size: 11px; position: fixed; bottom: 0; width: 100%; display: flex; justify-content: space-between; transition: background 0.3s; }
+        /* Footer */
+        .status-bar { background: #007acc; color: white; padding: 2px 10px; font-size: 11px; height: 22px; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
         .status-bar.error { background: #f44747; }
         .syntax-purple { color: #c586c0; }
         .syntax-blue { color: #569cd6; }
@@ -51,29 +64,43 @@
         <div class="syntax-blue">▼ src</div>
         <div style="padding-left: 15px; color: #fff; background: #37373d;">word_matrix.json</div>
     </div>
-    <div class="editor">
+
+    <div class="main-content">
         <div class="tabs">
             <div class="tab">word_matrix.json</div>
             <button id="endTurnBtn" class="deploy-btn">DEPLOY: COMMIT_CHANGES</button>
         </div>
 
-        <div class="hint-bar">
-            <span style="color: #808080;">// CLUE:</span>
-            <input type="text" id="clueText" class="hint-input hint-text" placeholder="string_value">
-            <input type="number" id="clueNum" class="hint-input hint-num" min="1" max="8" value="1">
-            <button id="sendClueBtn" class="deploy-btn" style="background: #444;">SEND</button>
-            <div class="hint-display" id="displayClue">Waiting for stream...</div>
-        </div>
-
         <div class="code-area">
             <span class="syntax-purple">export</span> <span class="syntax-blue">const</span> nodes = [
-            <div class="grid" id="board">Loading environment...</div>
+            <div class="grid" id="board">Initializing kernel...</div>
             ];
         </div>
-    </div>
-    <div class="status-bar" id="statusBar">
-        <span id="processText">Process: Active</span>
-        <span id="turnIndicator">Role: -</span>
+
+        <!-- Terminal Panel -->
+        <div class="terminal-panel">
+            <div class="terminal-tabs">
+                <div class="terminal-tab">Output</div>
+                <div class="terminal-tab">Debug Console</div>
+                <div class="terminal-tab active">Terminal</div>
+            </div>
+            <div class="terminal-content">
+                <div id="displayClue" class="terminal-line">system@vscode:~$ waiting for clue_stream...</div>
+                
+                <div class="terminal-input-row">
+                    <span>antoine@master:~$ ./send_clue --word</span>
+                    <input type="text" id="clueText" class="term-in term-text" placeholder='"string"' autofocus>
+                    <span>--count</span>
+                    <input type="number" id="clueNum" class="term-in term-num" min="1" max="8" value="1">
+                    <button id="sendClueBtn" class="deploy-btn" style="background: #333; margin-left: 10px;">EXECUTE</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="status-bar" id="statusBar">
+            <span id="processText">Process: Connected (Port 5432)</span>
+            <span id="turnIndicator">Role: -</span>
+        </div>
     </div>
 
     <script>
@@ -89,9 +116,9 @@
             const urlParams = new URLSearchParams(window.location.search);
             const myRole = (urlParams.get('role') || 'A').toUpperCase();
 
-            // Envoyer un indice
+            // Envoyer l'indice
             document.getElementById('sendClueBtn').onclick = async () => {
-                const text = document.getElementById('clueText').value;
+                const text = document.getElementById('clueText').value.replace(/"/g, '');
                 const num = document.getElementById('clueNum').value;
                 if (!text) return;
                 await mySupabase.from('game_hints').update({ clue_text: text, clue_number: num, sent_by: myRole }).eq('id', 1);
@@ -103,7 +130,6 @@
                 await mySupabase.from('game_control').update({ current_turn: nextTurn }).eq('id', 1);
                 loadGame();
             }
-
             document.getElementById('endTurnBtn').onclick = toggleTurn;
 
             async function loadGame() {
@@ -112,7 +138,7 @@
 
                 const { data: hintData } = await mySupabase.from('game_hints').select('*').eq('id', 1).single();
                 if (hintData) {
-                    document.getElementById('displayClue').innerText = `// INCOMING: "${hintData.clue_text}" [${hintData.clue_number}]`;
+                    document.getElementById('displayClue').innerText = `[${new Date().toLocaleTimeString()}] INCOMING_DATA: { word: "${hintData.clue_text}", count: ${hintData.clue_number}, origin: "ROLE_${hintData.sent_by}" }`;
                 }
 
                 const { data: words } = await mySupabase.from('game_state').select('*').order('id', { ascending: true });
@@ -126,13 +152,13 @@
                     board.className = "grid game-over-active";
                     btn.disabled = true;
                     statusBar.className = "status-bar error";
-                    document.getElementById('processText').innerText = "Process: FATAL_ERROR";
-                    document.getElementById('turnIndicator').innerText = "SYSTEM HALTED";
+                    document.getElementById('processText').innerText = "Process: KILLED (FATAL_SIGTERM)";
+                    document.getElementById('turnIndicator').innerText = "MEMORY_DUMP: FAILURE";
                 } else {
                     board.className = isMyTurn ? "grid" : "grid not-your-turn";
                     btn.disabled = !isMyTurn;
                     statusBar.className = "status-bar";
-                    document.getElementById('turnIndicator').innerText = isMyTurn ? `ACTIVE: ROLE_${myRole}` : `WAITING: ROLE_${ctrl.current_turn}`;
+                    document.getElementById('turnIndicator').innerText = isMyTurn ? `SESSION: ROLE_${myRole}` : `WAITING: ROLE_${ctrl.current_turn}`;
                 }
                 
                 board.innerHTML = ''; 
@@ -166,7 +192,6 @@
                     board.appendChild(div);
                 });
             }
-
             setInterval(loadGame, 2000);
             loadGame();
         }
