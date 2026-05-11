@@ -10,40 +10,42 @@
         .main-content { flex-grow: 1; display: flex; flex-direction: column; height: 100vh; }
         .tabs { background: #2d2d2d; display: flex; height: 35px; align-items: center; justify-content: space-between; padding-right: 10px; flex-shrink: 0; }
         .tab { padding: 0 20px; background: #1e1e1e; color: #fff; border-top: 1px solid #007acc; height: 100%; display: flex; align-items: center; }
-        
         .code-area { flex-grow: 1; padding: 20px 40px; line-height: 1.6; overflow-y: auto; background: #1e1e1e; }
         .grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin: 20px 0; }
         .word { border: 1px solid #3c3c3c; padding: 15px 10px; cursor: pointer; color: #ce9178; border-left: 3px solid transparent; }
         .word:hover { background: #2a2d2e; }
 
-        /* Terminal Panel */
+        /* Terminal */
         .terminal-panel { height: 220px; background: #1e1e1e; border-top: 1px solid #333; display: flex; flex-direction: column; flex-shrink: 0; }
         .terminal-tabs { background: #1e1e1e; display: flex; padding: 0 20px; gap: 20px; height: 30px; align-items: center; border-bottom: 1px solid #2d2d2d; }
         .terminal-tab { font-size: 11px; color: #858585; cursor: pointer; text-transform: uppercase; }
         .terminal-tab.active { color: #fff; border-bottom: 1px solid #fff; padding-bottom: 2px; }
-        
         .terminal-content { flex-grow: 1; padding: 10px 20px; font-family: 'Consolas', monospace; overflow-y: auto; display: flex; flex-direction: column; }
-        .history-log { color: #808080; font-size: 11px; line-height: 1.4; margin-bottom: 10px; border-bottom: 1px solid #2d2d2d; padding-bottom: 5px; }
+        
+        /* Historique avec couleurs */
+        .history-log { font-size: 11px; margin-bottom: 6px; border-bottom: 1px solid #252526; padding-bottom: 4px; }
+        .log-time { color: #555; }
+        .log-clue { color: #ce9178; font-weight: bold; }
+        .log-words { margin-left: 10px; }
+        .hist-agent { color: #6a9955; font-weight: bold; }
+        .hist-civil { color: #808080; text-decoration: line-through; }
+        .hist-assassin { color: #f44747; font-weight: bold; }
+
         .terminal-input-row { display: flex; align-items: center; gap: 8px; margin-top: auto; color: #ccc; padding-top: 10px; }
-        
         .term-in { background: transparent; border: none; color: #ce9178; outline: none; font-family: inherit; font-size: 13px; }
-        .term-text { width: 200px; }
+        .term-text { width: 180px; }
         .term-num { width: 30px; }
-        
         .deploy-btn { background: #007acc; color: white; border: none; padding: 4px 12px; font-size: 11px; cursor: pointer; border-radius: 2px; }
         .deploy-btn:disabled { background: #3e3e42; color: #858585; cursor: not-allowed; }
 
-        /* Status Colors */
         .agent { color: #6a9955 !important; font-style: italic; border-color: #6a9955 !important; background: rgba(106, 153, 85, 0.1); pointer-events: none; }
         .civil { opacity: 0.4; text-decoration: line-through; border-color: #333 !important; }
         .assassin { color: #f44747 !important; font-weight: bold; border-color: #f44747 !important; background: rgba(244, 71, 71, 0.4) !important; pointer-events: none; }
         .hint-green { border-left: 3px solid #6a9955 !important; }
         .hint-black { border-left: 3px solid #f44747 !important; }
-
         .not-your-turn { opacity: 0.5; pointer-events: none; filter: grayscale(0.5); }
         .game-over-active { pointer-events: none !important; }
-        
-        .status-bar { background: #007acc; color: white; padding: 2px 10px; font-size: 11px; height: 22px; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
+        .status-bar { background: #007acc; color: white; padding: 2px 10px; font-size: 11px; height: 22px; display: flex; justify-content: space-between; align-items: center; }
         .status-bar.error { background: #f44747; }
         .syntax-purple { color: #c586c0; }
         .syntax-blue { color: #569cd6; }
@@ -55,31 +57,23 @@
         <div class="syntax-blue">▼ src</div>
         <div style="padding-left: 15px; color: #fff; background: #37373d;">word_matrix.json</div>
     </div>
-
     <div class="main-content">
         <div class="tabs">
             <div class="tab">word_matrix.json</div>
             <button id="endTurnBtn" class="deploy-btn">DEPLOY: COMMIT_CHANGES</button>
         </div>
-
         <div class="code-area">
             <span class="syntax-purple">export</span> <span class="syntax-blue">const</span> nodes = [
-            <div class="grid" id="board">Initializing kernel...</div>
+            <div class="grid" id="board">...</div>
             ];
         </div>
-
         <div class="terminal-panel">
             <div class="terminal-tabs">
-                <div class="terminal-tab">Output</div>
-                <div class="terminal-tab">Debug Console</div>
                 <div class="terminal-tab active">Terminal</div>
             </div>
             <div class="terminal-content">
-                <div id="clueHistory" style="overflow-y: auto; flex-grow: 1;">
-                    <!-- L'historique apparaîtra ici -->
-                </div>
-                
-                <div class="terminal-input-row" id="inputZone">
+                <div id="clueHistory" style="overflow-y: auto; flex-grow: 1;"></div>
+                <div class="terminal-input-row">
                     <span>antoine@master:~$ ./push_clue --val</span>
                     <input type="text" id="clueText" class="term-in term-text" placeholder='"string"'>
                     <span>--count</span>
@@ -88,9 +82,8 @@
                 </div>
             </div>
         </div>
-
         <div class="status-bar" id="statusBar">
-            <span id="processText">Process: Connected (Port 5432)</span>
+            <span id="processText">Process: Connected</span>
             <span id="turnIndicator">Role: -</span>
         </div>
     </div>
@@ -108,7 +101,6 @@
             const urlParams = new URLSearchParams(window.location.search);
             const myRole = (urlParams.get('role') || 'A').toUpperCase();
 
-            // Envoyer l'indice (Nouvelle ligne dans la table)
             document.getElementById('sendClueBtn').onclick = async () => {
                 const text = document.getElementById('clueText').value.replace(/"/g, '');
                 const num = document.getElementById('clueNum').value;
@@ -127,9 +119,9 @@
 
             async function loadGame() {
                 const { data: ctrl } = await mySupabase.from('game_control').select('current_turn').eq('id', 1).single();
-                const isMyTurn = ctrl.current_turn === myRole;
+                const currentTurn = ctrl ? ctrl.current_turn : 'A';
+                const isMyTurn = currentTurn === myRole;
 
-                // Charger TOUT l'historique des indices
                 const { data: allHints } = await mySupabase.from('game_hints').select('*').order('created_at', { ascending: true });
                 const historyDiv = document.getElementById('clueHistory');
                 historyDiv.innerHTML = '';
@@ -138,7 +130,16 @@
                         const line = document.createElement('div');
                         line.className = 'history-log';
                         const time = new Date(h.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-                        line.innerText = `[${time}] ROLE_${h.sent_by}: { clue: "${h.clue_text}", n: ${h.clue_number} }`;
+                        
+                        let wordsHtml = '';
+                        if (h.revealed_words) {
+                            h.revealed_words.split(',').forEach(w => {
+                                const [name, status] = w.split(':');
+                                wordsHtml += ` <span class="hist-${status}">${name}</span>`;
+                            });
+                        }
+                        
+                        line.innerHTML = `<span class="log-time">[${time}]</span> <span class="log-clue">@${h.sent_by} -> ${h.clue_text} (${h.clue_number})</span><span class="log-words">${wordsHtml}</span>`;
                         historyDiv.appendChild(line);
                     });
                     historyDiv.scrollTop = historyDiv.scrollHeight;
@@ -147,22 +148,12 @@
                 const { data: words } = await mySupabase.from('game_state').select('*').order('id', { ascending: true });
                 const board = document.getElementById('board');
                 const btn = document.getElementById('endTurnBtn');
-                const statusBar = document.getElementById('statusBar');
-                
                 const isGameOver = words.some(w => w.status_a === 'assassin' || w.status_b === 'assassin');
 
-                if (isGameOver) {
-                    board.className = "grid game-over-active";
-                    btn.disabled = true;
-                    statusBar.className = "status-bar error";
-                    document.getElementById('processText').innerText = "Process: KILLED (FATAL_SIGTERM)";
-                    document.getElementById('turnIndicator').innerText = "MEMORY_DUMP: FAILURE";
-                } else {
-                    board.className = isMyTurn ? "grid" : "grid not-your-turn";
-                    btn.disabled = !isMyTurn;
-                    statusBar.className = "status-bar";
-                    document.getElementById('turnIndicator').innerText = isMyTurn ? `SESSION: ROLE_${myRole}` : `WAITING: ROLE_${ctrl.current_turn}`;
-                }
+                if (isGameOver) { board.className = "grid game-over-active"; document.getElementById('statusBar').className = "status-bar error"; }
+                else { board.className = isMyTurn ? "grid" : "grid not-your-turn"; }
+                
+                document.getElementById('turnIndicator').innerText = isGameOver ? "FAILURE" : (isMyTurn ? `ACTIVE: ${myRole}` : `WAITING: ${currentTurn}`);
                 
                 board.innerHTML = ''; 
                 words.forEach(item => {
@@ -170,11 +161,9 @@
                     div.className = 'word';
                     div.innerText = `"${item.word}",`;
                     const myStatus = (myRole === 'A') ? item.status_a : item.status_b;
-                    
                     if (item.status_a === 'assassin' || item.status_b === 'assassin') div.classList.add('assassin');
                     else if (item.status_a === 'agent' || item.status_b === 'agent') div.classList.add('agent');
                     else if (myStatus === 'civil') div.classList.add('civil');
-
                     if (!div.classList.contains('agent') && !div.classList.contains('assassin')) {
                         const myView = (myRole === 'A') ? item.role_a_view : item.role_b_view;
                         if (myView === 'green') div.classList.add('hint-green');
@@ -187,6 +176,14 @@
                         let res = 'civil'; 
                         if (otherView === 'green') res = 'agent';
                         if (otherView === 'black') res = 'assassin';
+                        
+                        // Enregistrer le mot dans l'historique du dernier indice
+                        if (allHints && allHints.length > 0) {
+                            const lastHint = allHints[allHints.length - 1];
+                            const newWords = lastHint.revealed_words ? (lastHint.revealed_words + ',' + item.word + ':' + res) : (item.word + ':' + res);
+                            await mySupabase.from('game_hints').update({ revealed_words: newWords }).eq('id', lastHint.id);
+                        }
+
                         const update = (myRole === 'A') ? { status_a: res } : { status_b: res };
                         await mySupabase.from('game_state').update(update).eq('id', item.id);
                         if (res === 'civil') await toggleTurn();
