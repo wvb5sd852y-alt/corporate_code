@@ -3,48 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <title>Visual Studio Code - word_matrix.json</title>
+    <!-- Chargement de la bibliothèque avec un lien plus stable -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         body { background: #1e1e1e; color: #d4d4d4; font-family: 'Consolas', 'Courier New', monospace; margin: 0; display: flex; height: 100vh; font-size: 13px; overflow: hidden; }
-        
-        /* Sidebar VS Code */
         .sidebar { width: 220px; background: #252526; border-right: 1px solid #333; padding: 10px; display: flex; flex-direction: column; }
         .sidebar-title { color: #6d6d6d; font-weight: bold; margin-bottom: 12px; font-size: 11px; letter-spacing: 1px; }
         .file-tree { padding-left: 5px; }
         .file { padding: 3px 0; cursor: pointer; display: flex; align-items: center; }
         .file.active { background: #37373d; color: #fff; margin-left: -10px; padding-left: 20px; width: calc(100% + 10px); }
-        
-        /* Éditeur principal */
         .editor { flex-grow: 1; display: flex; flex-direction: column; background: #1e1e1e; }
         .tabs { background: #2d2d2d; display: flex; height: 35px; align-items: center; }
         .tab { padding: 0 20px; background: #2d2d2d; color: #969696; height: 100%; display: flex; align-items: center; border-right: 1px solid #252526; font-size: 12px; }
         .tab.active { background: #1e1e1e; color: #fff; border-top: 1px solid #007acc; }
-        
-        /* Zone de code */
         .code-area { padding: 20px 40px; line-height: 1.6; overflow-y: auto; }
         .syntax-purple { color: #c586c0; }
         .syntax-blue { color: #569cd6; }
         .syntax-orange { color: #ce9178; }
-
-        /* Grille de jeu camouflée */
         .grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin: 20px 0; }
-        .word { 
-            border: 1px solid #3c3c3c; 
-            padding: 15px 10px; 
-            text-align: left; 
-            cursor: pointer; 
-            color: #ce9178; 
-            transition: background 0.2s;
-            border-left: 3px solid transparent; 
-        }
+        .word { border: 1px solid #3c3c3c; padding: 15px 10px; text-align: left; cursor: pointer; color: #ce9178; transition: background 0.2s; border-left: 3px solid transparent; }
         .word:hover { background: #2a2d2e; }
-
-        /* États après clic (Automatique) */
         .agent { color: #6a9955 !important; font-style: italic; border-color: #6a9955 !important; background: rgba(106, 153, 85, 0.05); }
         .civil { color: #808080 !important; opacity: 0.4; border-color: #333 !important; text-decoration: line-through; }
         .assassin { color: #f44747 !important; font-weight: bold; border-color: #f44747 !important; background: rgba(244, 71, 71, 0.1); }
-
-        /* Indices discrets (Pour faire deviner) */
         .hint-green { border-left: 3px solid #6a9955 !important; }
         .hint-black { border-left: 3px solid #f44747 !important; }
     </style>
@@ -57,7 +38,6 @@
             <div class="file" style="padding-left: 15px;">&nbsp; main.cpp</div>
             <div class="file active" style="padding-left: 15px;">&nbsp; word_matrix.json</div>
             <div class="file" style="padding-left: 15px;">&nbsp; sensors.h</div>
-            <div class="syntax-blue">▼ include</div>
         </div>
     </div>
 
@@ -69,11 +49,8 @@
         <div class="code-area">
             <span class="syntax-purple">export</span> <span class="syntax-blue">const</span> <span style="color: #dcdcaa;">get_game_nodes</span> = () => {<br>
             &nbsp;&nbsp;<span class="syntax-purple">return</span> {<br>
-            &nbsp;&nbsp;&nbsp;&nbsp;<span class="syntax-blue">"status"</span>: <span class="syntax-orange">"READY"</span>,<br>
             &nbsp;&nbsp;&nbsp;&nbsp;<span class="syntax-blue">"nodes"</span>: [
-            
             <div class="grid" id="board"></div>
-            
             &nbsp;&nbsp;&nbsp;&nbsp;]<br>
             &nbsp;&nbsp;};<br>
             };
@@ -81,62 +58,67 @@
     </div>
 
     <script>
-        const SUPABASE_URL = 'https://ftvxmlxdovbgcxdayzvn.supabase.co'; 
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ0dnhtbHhkb3ZiZ2N4ZGF5enZuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg0NzgwNDcsImV4cCI6MjA5NDA1NDA0N30.IOHBBGzED0FV1xRYKOMsJapjACpeX2JVEhfNgXXT4B8'; 
+        // On attend que TOUTE la page et les scripts externes soient chargés
+        window.onload = function() {
+            const SUPABASE_URL = 'https://ftvxmlxdovbgcxdayzvn.supabase.co'; 
+            const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ0dnhtbHhkb3ZiZ2N4ZGF5enZuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg0NzgwNDcsImV4cCI6MjA5NDA1NDA0N30.IOHBBGzED0FV1xRYKOMsJapjACpeX2JVEhfNgXXT4B8'; 
 
-        const mySupabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+            // Utilisation explicite de l'objet global supabase
+            const mySupabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        const urlParams = new URLSearchParams(window.location.search);
-        const myRole = urlParams.get('role') || 'A'; 
+            const urlParams = new URLSearchParams(window.location.search);
+            const myRole = urlParams.get('role') || 'A'; 
 
-        async function loadGame() {
-            const { data, error } = await mySupabase
-                .from('game_state')
-                .select('*')
-                .order('id', { ascending: true });
+            async function loadGame() {
+                const { data, error } = await mySupabase
+                    .from('game_state')
+                    .select('*')
+                    .order('id', { ascending: true });
 
-            if (error) return;
-
-            const board = document.getElementById('board');
-            board.innerHTML = ''; 
-
-            data.forEach(item => {
-                const div = document.createElement('div');
-                div.className = 'word';
-                div.innerText = `"${item.word}",`;
-
-                if (item.status !== 'neutral') {
-                    div.classList.add(item.status);
-                } else {
-                    const myView = (myRole === 'A') ? item.role_a_view : item.role_b_view;
-                    if (myView === 'green') div.classList.add('hint-green');
-                    if (myView === 'black') div.classList.add('hint-black');
+                if (error) {
+                    console.error('Erreur SQL:', error.message);
+                    return;
                 }
 
-                div.onclick = async () => {
-                    if (item.status !== 'neutral') return;
+                const board = document.getElementById('board');
+                board.innerHTML = ''; 
 
-                    // On regarde ce que L'AUTRE voit pour ce mot
-                    const otherView = (myRole === 'A') ? item.role_b_view : item.role_a_view;
-                    
-                    let nextStatus = 'civil'; 
-                    if (otherView === 'green') nextStatus = 'agent';
-                    if (otherView === 'black') nextStatus = 'assassin';
+                data.forEach(item => {
+                    const div = document.createElement('div');
+                    div.className = 'word';
+                    div.innerText = `"${item.word}",`;
 
-                    await mySupabase
-                        .from('game_state')
-                        .update({ status: nextStatus })
-                        .eq('id', item.id);
-                    
-                    loadGame(); 
-                };
+                    if (item.status !== 'neutral') {
+                        div.classList.add(item.status);
+                    } else {
+                        const myView = (myRole === 'A') ? item.role_a_view : item.role_b_view;
+                        if (myView === 'green') div.classList.add('hint-green');
+                        if (myView === 'black') div.classList.add('hint-black');
+                    }
 
-                board.appendChild(div);
-            });
-        }
+                    div.onclick = async () => {
+                        if (item.status !== 'neutral') return;
+                        const otherView = (myRole === 'A') ? item.role_b_view : item.role_a_view;
+                        
+                        let nextStatus = 'civil'; 
+                        if (otherView === 'green') nextStatus = 'agent';
+                        if (otherView === 'black') nextStatus = 'assassin';
 
-        setInterval(loadGame, 2000);
-        loadGame();
+                        await mySupabase
+                            .from('game_state')
+                            .update({ status: nextStatus })
+                            .eq('id', item.id);
+                        
+                        loadGame(); 
+                    };
+
+                    board.appendChild(div);
+                });
+            }
+
+            setInterval(loadGame, 2000);
+            loadGame();
+        };
     </script>
 </body>
 </html>
