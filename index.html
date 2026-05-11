@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Visual Studio Code - word_matrix.json</title>
-    <!-- Chargement de la bibliothèque Supabase -->
+    <!-- On force le rafraîchissement du script avec un paramètre de version ?v=2 -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         body { background: #1e1e1e; color: #d4d4d4; font-family: 'Consolas', 'Courier New', monospace; margin: 0; display: flex; height: 100vh; font-size: 13px; overflow: hidden; }
@@ -45,7 +45,7 @@
         .civil { color: #808080 !important; opacity: 0.4; border-color: #333 !important; text-decoration: line-through; }
         .assassin { color: #f44747 !important; font-weight: bold; border-color: #f44747 !important; background: rgba(244, 71, 71, 0.1); }
 
-        /* Indices discrets (Pour faire deviner) */
+        /* Indices discrets */
         .hint-green { border-left: 3px solid #6a9955 !important; }
         .hint-black { border-left: 3px solid #f44747 !important; }
     </style>
@@ -58,7 +58,6 @@
             <div class="file" style="padding-left: 15px;">&nbsp; main.cpp</div>
             <div class="file active" style="padding-left: 15px;">&nbsp; word_matrix.json</div>
             <div class="file" style="padding-left: 15px;">&nbsp; sensors.h</div>
-            <div class="syntax-blue">▼ include</div>
         </div>
     </div>
 
@@ -70,11 +69,8 @@
         <div class="code-area">
             <span class="syntax-purple">export</span> <span class="syntax-blue">const</span> <span style="color: #dcdcaa;">get_game_nodes</span> = () => {<br>
             &nbsp;&nbsp;<span class="syntax-purple">return</span> {<br>
-            &nbsp;&nbsp;&nbsp;&nbsp;<span class="syntax-blue">"status"</span>: <span class="syntax-orange">"READY"</span>,<br>
             &nbsp;&nbsp;&nbsp;&nbsp;<span class="syntax-blue">"nodes"</span>: [
-            
             <div class="grid" id="board"></div>
-            
             &nbsp;&nbsp;&nbsp;&nbsp;]<br>
             &nbsp;&nbsp;};<br>
             };
@@ -82,11 +78,10 @@
     </div>
 
     <script>
-        // Fonction qui attend que la bibliothèque Supabase soit chargée
-        function startApp() {
+        // On vérifie de façon agressive si Supabase est chargé
+        function initGame() {
             if (typeof window.supabase === 'undefined') {
-                console.log("Supabase n'est pas encore prêt, on attend...");
-                setTimeout(startApp, 100);
+                setTimeout(initGame, 100);
                 return;
             }
 
@@ -94,65 +89,58 @@
             const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ0dnhtbHhkb3ZiZ2N4ZGF5enZuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg0NzgwNDcsImV4cCI6MjA5NDA1NDA0N30.IOHBBGzED0FV1xRYKOMsJapjACpeX2JVEhfNgXXT4B8'; 
 
             const mySupabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
             const urlParams = new URLSearchParams(window.location.search);
             const myRole = urlParams.get('role') || 'A'; 
 
             async function loadGame() {
-                const { data, error } = await mySupabase
-                    .from('game_state')
-                    .select('*')
-                    .order('id', { ascending: true });
+                try {
+                    const { data, error } = await mySupabase
+                        .from('game_state')
+                        .select('*')
+                        .order('id', { ascending: true });
 
-                if (error) {
-                    console.error('Erreur SQL:', error.message);
-                    return;
+                    if (error) throw error;
+
+                    const board = document.getElementById('board');
+                    if (!board) return;
+                    board.innerHTML = ''; 
+
+                    data.forEach(item => {
+                        const div = document.createElement('div');
+                        div.className = 'word';
+                        div.innerText = `"${item.word}",`;
+
+                        if (item.status !== 'neutral') {
+                            div.classList.add(item.status);
+                        } else {
+                            const myView = (myRole === 'A') ? item.role_a_view : item.role_b_view;
+                            if (myView === 'green') div.classList.add('hint-green');
+                            if (myView === 'black') div.classList.add('hint-black');
+                        }
+
+                        div.onclick = async () => {
+                            if (item.status !== 'neutral') return;
+                            const otherView = (myRole === 'A') ? item.role_b_view : item.role_a_view;
+                            let nextStatus = 'civil'; 
+                            if (otherView === 'green') nextStatus = 'agent';
+                            if (otherView === 'black') nextStatus = 'assassin';
+
+                            await mySupabase.from('game_state').update({ status: nextStatus }).eq('id', item.id);
+                            loadGame(); 
+                        };
+                        board.appendChild(div);
+                    });
+                } catch (e) {
+                    console.error("Erreur de chargement :", e.message);
                 }
-
-                const board = document.getElementById('board');
-                board.innerHTML = ''; 
-
-                data.forEach(item => {
-                    const div = document.createElement('div');
-                    div.className = 'word';
-                    div.innerText = `"${item.word}",`;
-
-                    if (item.status !== 'neutral') {
-                        div.classList.add(item.status);
-                    } else {
-                        const myView = (myRole === 'A') ? item.role_a_view : item.role_b_view;
-                        if (myView === 'green') div.classList.add('hint-green');
-                        if (myView === 'black') div.classList.add('hint-black');
-                    }
-
-                    div.onclick = async () => {
-                        if (item.status !== 'neutral') return;
-
-                        // On regarde ce que L'AUTRE voit pour ce mot
-                        const otherView = (myRole === 'A') ? item.role_b_view : item.role_a_view;
-                        
-                        let nextStatus = 'civil'; 
-                        if (otherView === 'green') nextStatus = 'agent';
-                        if (otherView === 'black') nextStatus = 'assassin';
-
-                        await mySupabase
-                            .from('game_state')
-                            .update({ status: nextStatus })
-                            .eq('id', item.id);
-                        
-                        loadGame(); 
-                    };
-
-                    board.appendChild(div);
-                });
             }
 
             setInterval(loadGame, 2000);
             loadGame();
         }
 
-        // Lancement quand la fenêtre est chargée
-        window.onload = startApp;
+        // Lancement forcé
+        window.onload = initGame;
     </script>
 </body>
 </html>
