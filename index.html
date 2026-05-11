@@ -6,49 +6,57 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         body { background: #1e1e1e; color: #d4d4d4; font-family: 'Consolas', monospace; margin: 0; display: flex; height: 100vh; font-size: 13px; overflow: hidden; }
-        .sidebar { width: 220px; background: #252526; border-right: 1px solid #333; padding: 10px; display: flex; flex-direction: column; }
-        .sidebar-title { color: #6d6d6d; font-weight: bold; margin-bottom: 12px; font-size: 11px; }
-        .file.active { background: #37373d; color: #fff; padding: 5px 10px; margin-left: -10px; width: calc(100% + 10px); }
+        .sidebar { width: 200px; background: #252526; border-right: 1px solid #333; padding: 10px; }
         .editor { flex-grow: 1; display: flex; flex-direction: column; background: #1e1e1e; }
         .tabs { background: #2d2d2d; display: flex; height: 35px; align-items: center; justify-content: space-between; padding-right: 10px; }
-        .tab { padding: 0 20px; background: #1e1e1e; color: #fff; border-top: 1px solid #007acc; height: 100%; display: flex; align-items: center; font-size: 12px; }
+        .tab { padding: 0 20px; background: #1e1e1e; color: #fff; border-top: 1px solid #007acc; height: 100%; display: flex; align-items: center; }
+        
+        /* Bouton Fin de tour déguisé */
         .deploy-btn { background: #007acc; color: white; border: none; padding: 4px 12px; font-size: 11px; cursor: pointer; border-radius: 2px; }
+        .deploy-btn:hover { background: #1f8ad2; }
         .deploy-btn:disabled { background: #3e3e42; color: #858585; cursor: not-allowed; }
+
         .code-area { padding: 20px 40px; line-height: 1.6; overflow-y: auto; }
-        .status-bar { background: #007acc; color: white; padding: 2px 10px; font-size: 11px; position: fixed; bottom: 0; width: 100%; display: flex; justify-content: space-between; }
-        .syntax-purple { color: #c586c0; }
-        .syntax-blue { color: #569cd6; }
         .grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin: 20px 0; }
+        
         .word { border: 1px solid #3c3c3c; padding: 15px 10px; cursor: pointer; color: #ce9178; border-left: 3px solid transparent; }
         .word:hover { background: #2a2d2e; }
+
+        /* Styles de jeu */
         .agent { color: #6a9955 !important; font-style: italic; border-color: #6a9955 !important; background: rgba(106, 153, 85, 0.1); pointer-events: none; }
         .civil { opacity: 0.4; text-decoration: line-through; border-color: #333 !important; }
         .assassin { color: #f44747 !important; font-weight: bold; border-color: #f44747 !important; background: rgba(244, 71, 71, 0.2); pointer-events: none; }
         .hint-green { border-left: 3px solid #6a9955 !important; }
         .hint-black { border-left: 3px solid #f44747 !important; }
-        .not-your-turn { opacity: 0.6; pointer-events: none; }
+
+        /* Verrouillage si ce n'est pas ton tour */
+        .not-your-turn { opacity: 0.5; pointer-events: none; filter: grayscale(0.5); }
+        
+        .status-bar { background: #007acc; color: white; padding: 2px 10px; font-size: 11px; position: fixed; bottom: 0; width: 100%; display: flex; justify-content: space-between; }
+        .syntax-purple { color: #c586c0; }
+        .syntax-blue { color: #569cd6; }
     </style>
 </head>
 <body>
     <div class="sidebar">
-        <div class="sidebar-title">EXPLORER</div>
+        <div style="color: #6d6d6d; font-size: 11px; margin-bottom: 10px;">EXPLORER</div>
         <div class="syntax-blue">▼ src</div>
-        <div class="file active">word_matrix.json</div>
+        <div style="padding-left: 15px; color: #fff; background: #37373d;">word_matrix.json</div>
     </div>
     <div class="editor">
         <div class="tabs">
             <div class="tab">word_matrix.json</div>
-            <button id="endTurnBtn" class="deploy-btn">DEPLOY: END_TURN</button>
+            <button id="endTurnBtn" class="deploy-btn">DEPLOY: COMMIT_CHANGES</button>
         </div>
         <div class="code-area">
             <span class="syntax-purple">export</span> <span class="syntax-blue">const</span> nodes = [
-            <div class="grid" id="board"></div>
+            <div class="grid" id="board">Connexion au serveur...</div>
             ];
         </div>
     </div>
-    <div class="status-bar" id="statusBar">
-        <span>Process: Running...</span>
-        <span id="turnIndicator">Current Role: -</span>
+    <div class="status-bar">
+        <span id="processInfo">Process: Initializing...</span>
+        <span id="turnIndicator">Role: -</span>
     </div>
 
     <script>
@@ -61,8 +69,9 @@
             const SUPABASE_URL = 'https://ftvxmlxdovbgcxdayzvn.supabase.co'; 
             const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ0dnhtbHhkb3ZiZ2N4ZGF5enZuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg0NzgwNDcsImV4cCI6MjA5NDA1NDA0N30.IOHBBGzED0FV1xRYKOMsJapjACpeX2JVEhfNgXXT4B8'; 
             const mySupabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+            
             const urlParams = new URLSearchParams(window.location.search);
-            const myRole = (urlParams.get('role') || 'A').toUpperCase(); 
+            const myRole = (urlParams.get('role') || 'A').toUpperCase();
 
             async function toggleTurn() {
                 const nextTurn = (myRole === 'A') ? 'B' : 'A';
@@ -73,22 +82,26 @@
             document.getElementById('endTurnBtn').onclick = toggleTurn;
 
             async function loadGame() {
-                const { data: ctrl } = await mySupabase.from('game_control').select('current_turn').single();
-                const isMyTurn = ctrl.current_turn === myRole;
+                // 1. Récupérer le tour actuel
+                const { data: ctrl } = await mySupabase.from('game_control').select('current_turn').eq('id', 1).single();
+                const currentTurn = ctrl ? ctrl.current_turn : 'A';
+                const isMyTurn = currentTurn === myRole;
 
-                const { data, error } = await mySupabase.from('game_state').select('*').order('id', { ascending: true });
+                // 2. Récupérer les mots
+                const { data: words, error } = await mySupabase.from('game_state').select('*').order('id', { ascending: true });
                 if (error) return;
 
-                const turnIndicator = document.getElementById('turnIndicator');
-                const btn = document.getElementById('endTurnBtn');
                 const board = document.getElementById('board');
+                const btn = document.getElementById('endTurnBtn');
+                const turnInd = document.getElementById('turnIndicator');
                 
-                turnIndicator.innerText = isMyTurn ? `ACTIVE SESSION: ROLE_${myRole}` : `WAITING FOR ROLE_${ctrl.current_turn}...`;
-                btn.disabled = !isMyTurn;
                 board.className = isMyTurn ? "grid" : "grid not-your-turn";
+                btn.disabled = !isMyTurn;
+                turnInd.innerText = isMyTurn ? `ACTIVE SESSION: ROLE_${myRole}` : `WAITING: ROLE_${currentTurn}`;
+                
                 board.innerHTML = ''; 
 
-                data.forEach(item => {
+                words.forEach(item => {
                     const div = document.createElement('div');
                     div.className = 'word';
                     div.innerText = `"${item.word}",`;
@@ -109,15 +122,14 @@
                         if (!isMyTurn || div.classList.contains('agent') || div.classList.contains('assassin')) return;
 
                         const otherView = (myRole === 'A') ? item.role_b_view : item.role_a_view;
-                        let result = 'civil'; 
-                        if (otherView === 'green') result = 'agent';
-                        if (otherView === 'black') result = 'assassin';
+                        let res = 'civil'; 
+                        if (otherView === 'green') res = 'agent';
+                        if (otherView === 'black') res = 'assassin';
 
-                        const updateData = (myRole === 'A') ? { status_a: result } : { status_b: result };
-                        await mySupabase.from('game_state').update(updateData).eq('id', item.id);
+                        const update = (myRole === 'A') ? { status_a: res } : { status_b: res };
+                        await mySupabase.from('game_state').update(update).eq('id', item.id);
                         
-                        if (result === 'civil') {
-                            alert("MISFIRE: Switching turn...");
+                        if (res === 'civil') {
                             await toggleTurn();
                         } else {
                             loadGame();
@@ -126,6 +138,7 @@
                     board.appendChild(div);
                 });
             }
+
             setInterval(loadGame, 2000);
             loadGame();
         }
