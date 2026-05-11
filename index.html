@@ -16,14 +16,20 @@
         .grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin: 20px 0; }
         .word { border: 1px solid #3c3c3c; padding: 15px 10px; cursor: pointer; color: #ce9178; border-left: 3px solid transparent; }
         .word:hover { background: #2a2d2e; }
+
+        /* États de jeu */
         .agent { color: #6a9955 !important; font-style: italic; border-color: #6a9955 !important; background: rgba(106, 153, 85, 0.1); pointer-events: none; }
         .civil { opacity: 0.4; text-decoration: line-through; border-color: #333 !important; }
         .assassin { color: #f44747 !important; font-weight: bold; border-color: #f44747 !important; background: rgba(244, 71, 71, 0.4) !important; pointer-events: none; }
+        
         .hint-green { border-left: 3px solid #6a9955 !important; }
         .hint-black { border-left: 3px solid #f44747 !important; }
+
+        /* Verrouillage global */
         .not-your-turn { opacity: 0.5; pointer-events: none; filter: grayscale(0.5); }
-        .game-over-active { pointer-events: none !important; }
-        .status-bar { background: #007acc; color: white; padding: 2px 10px; font-size: 11px; position: fixed; bottom: 0; width: 100%; display: flex; justify-content: space-between; }
+        .game-over-active { pointer-events: none !important; cursor: not-allowed; }
+        
+        .status-bar { background: #007acc; color: white; padding: 2px 10px; font-size: 11px; position: fixed; bottom: 0; width: 100%; display: flex; justify-content: space-between; transition: background 0.3s; }
         .status-bar.error { background: #f44747; }
         .syntax-purple { color: #c586c0; }
         .syntax-blue { color: #569cd6; }
@@ -42,7 +48,7 @@
         </div>
         <div class="code-area">
             <span class="syntax-purple">export</span> <span class="syntax-blue">const</span> nodes = [
-            <div class="grid" id="board">Initialisation...</div>
+            <div class="grid" id="board">Synchronisation...</div>
             ];
         </div>
     </div>
@@ -87,15 +93,15 @@
                 const statusBar = document.getElementById('statusBar');
                 const processText = document.getElementById('processText');
                 
-                // CRUCIAL : Détecter si N'IMPORTE quel mot est devenu un assassin
+                // VÉRIFICATION GLOBALE : Si un assassin existe dans n'importe quelle vue de n'importe quel joueur
                 const isGameOver = words.some(w => w.status_a === 'assassin' || w.status_b === 'assassin');
 
                 if (isGameOver) {
-                    board.className = "grid game-over-active";
+                    board.className = "grid game-over-active"; // Désactive les clics sur toute la grille
                     btn.disabled = true;
                     statusBar.className = "status-bar error";
-                    processText.innerText = "Process: FATAL_ERROR (MEMORY_CORRUPTION)";
-                    turnInd.innerText = "CRITICAL FAILURE";
+                    processText.innerText = "Process: FATAL_ERROR (MEMORY_CORRUPTION_DETECTED)";
+                    turnInd.innerText = "CRITICAL FAILURE: SYSTEM HALTED";
                 } else {
                     board.className = isMyTurn ? "grid" : "grid not-your-turn";
                     btn.disabled = !isMyTurn;
@@ -112,14 +118,17 @@
                     div.innerText = `"${item.word}",`;
 
                     const myStatus = (myRole === 'A') ? item.status_a : item.status_b;
-                    const otherStatus = (myRole === 'A') ? item.status_b : item.status_a;
                     
-                    // Priorité à l'affichage de l'assassin ou de l'agent
-                    if (item.status_a === 'assassin' || item.status_b === 'assassin') div.classList.add('assassin');
-                    else if (item.status_a === 'agent' || item.status_b === 'agent') div.classList.add('agent');
-                    else if (myStatus === 'civil') div.classList.add('civil');
+                    // Priorité visuelle : si c'est un assassin, on l'affiche en rouge
+                    if (item.status_a === 'assassin' || item.status_b === 'assassin') {
+                        div.classList.add('assassin');
+                    } else if (item.status_a === 'agent' || item.status_b === 'agent') {
+                        div.classList.add('agent');
+                    } else if (myStatus === 'civil') {
+                        div.classList.add('civil');
+                    }
 
-                    // Liserés d'indices
+                    // Indices (si le mot n'est pas terminé)
                     if (!div.classList.contains('agent') && !div.classList.contains('assassin')) {
                         const myView = (myRole === 'A') ? item.role_a_view : item.role_b_view;
                         if (myView === 'green') div.classList.add('hint-green');
@@ -127,8 +136,8 @@
                     }
 
                     div.onclick = async () => {
-                        // Empêcher de jouer si Game Over ou pas son tour
-                        if (!isMyTurn || isGameOver || div.classList.contains('agent') || div.classList.contains('assassin')) return;
+                        // Empêche le clic si Game Over, si pas son tour, ou si mot déjà validé
+                        if (isGameOver || !isMyTurn || div.classList.contains('agent') || div.classList.contains('assassin')) return;
 
                         const otherView = (myRole === 'A') ? item.role_b_view : item.role_a_view;
                         let res = 'civil'; 
@@ -138,6 +147,7 @@
                         const update = (myRole === 'A') ? { status_a: res } : { status_b: res };
                         await mySupabase.from('game_state').update(update).eq('id', item.id);
                         
+                        // Si on vient de trouver l'assassin, l'écran va se bloquer au prochain refresh (2s max)
                         if (res === 'civil') {
                             await toggleTurn();
                         } else {
