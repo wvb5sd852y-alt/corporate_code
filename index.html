@@ -25,17 +25,28 @@
 
         .top-menu { background: var(--bg-darker); height: 35px; display: flex; align-items: center; padding: 0; flex-shrink: 0; }
         .menu-items { display: flex; gap: 12px; padding: 0 10px; font-size: 12px; color: #bbb; width: 240px; }
+        .menu-items span:hover { color: #fff; cursor: default; }
+        
         .search-container { flex-grow: 1; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .nav-arrows { display: flex; gap: 12px; color: var(--icon-grey); margin-right: 10px; }
+        .nav-arrows svg { cursor: pointer; opacity: 0.6; }
+        .nav-arrows svg:hover { opacity: 1; }
+        
         .search-bar-vscode { background: #3c3c3c; border: 1px solid #666; border-radius: 4px; width: 450px; height: 22px; display: flex; align-items: center; padding: 0 10px; color: #888; font-size: 11px; }
+
         .window-controls { display: flex; height: 100%; width: 135px; justify-content: flex-end; }
         .win-btn { width: 45px; display: flex; align-items: center; justify-content: center; cursor: default; }
         .win-btn:hover { background: #333; }
+        .win-btn.close:hover { background: #e81123; }
 
         .layout-middle { display: flex; flex-grow: 1; overflow: hidden; }
 
+        /* ACTIVITY BAR (ICÔNES GRISES/BLANCHES) */
         .activity-bar { width: 48px; background: var(--bg-activity); display: flex; flex-direction: column; align-items: center; padding: 10px 0; gap: 15px; border-right: 1px solid var(--border); flex-shrink: 0; }
         .act-icon { width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--icon-grey); }
+        .act-icon:hover { color: #fff; }
         .act-icon.active { color: #fff; border-left: 2px solid #fff; }
+        .act-icon svg { width: 24px; height: 24px; }
 
         /* SIDEBAR */
         .sidebar { width: 260px; background: var(--bg-sidebar); display: flex; flex-direction: column; flex-shrink: 0; border-right: 1px solid var(--border); }
@@ -55,7 +66,6 @@
         .tab.active { background: var(--bg-main); color: #fff; border-top: 1px solid var(--vscode-blue); }
 
         .code-area { flex-grow: 1; padding: 25px 45px; overflow-y: auto; line-height: 1.5; font-family: 'Consolas', monospace; }
-        .json-bracket { color: #ffd700; }
         .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px 40px; margin: 10px 0 10px 20px; }
         .word-row { cursor: pointer; white-space: nowrap; padding: 2px 5px; border-radius: 3px; border-left: 2px solid transparent; }
         .word-row:hover { background: #2a2d2e; }
@@ -93,6 +103,12 @@
             <span>File</span> <span>Edit</span> <span>Selection</span> <span>View</span>
         </div>
         <div class="search-container">
+            <div class="nav-arrows">
+                <!-- Flèche Gauche -->
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor"><path d="M10 12.5L5.5 8 10 3.5" stroke-width="1.2"/></svg>
+                <!-- Flèche Droite -->
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" style="opacity:0.3;"><path d="M6 12.5L10.5 8 6 3.5" stroke-width="1.2"/></svg>
+            </div>
             <div class="search-bar-vscode">word_matrix.json — duo-embedded-systems</div>
         </div>
         <div class="window-controls">
@@ -104,9 +120,14 @@
 
     <div class="layout-middle">
         <div class="activity-bar">
-            <div class="act-icon active">📄</div>
-            <div class="act-icon">🔍</div>
-            <div class="act-icon" style="margin-top: auto;">👤</div>
+            <!-- Explorer Icon -->
+            <div class="act-icon active"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg></div>
+            <!-- Source Control Icon -->
+            <div class="act-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M18 15c-.58 0-1.11.23-1.5.6l-5.1-3.1a3 3 0 000-1l5.1-3.1c.39.37.92.6 1.5.6a3 3 0 100-6 3 3 0 00-3 3c0 .17.02.34.05.5L9.9 9.6c-.39-.37-.92-.6-1.5-.6a3 3 0 100 6c.58 0 1.11-.23 1.5-.6l5.1 3.1c-.03.16-.05.33-.05.5a3 3 0 103-3z"/></svg></div>
+            <!-- Debug Icon -->
+            <div class="act-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 7h-2.1c-.2-.5-.5-.9-.8-1.3l1.4-1.4-1.4-1.4-2.2 2.2c-.6-.4-1.2-.7-1.9-.9V2h-2v2.2c-.7.2-1.3.5-1.9.9L5.9 2.9 4.5 4.3l1.4 1.4c-.3.4-.6.8-.8 1.3H3v2h2.1c0 .3-.1.7-.1 1H3v2h2.1c0 .3.1.7.1 1H3v2h2.1c.2.5.5.9.8 1.3l-1.4 1.4 1.4 1.4 2.2-2.2c.6.4 1.2.7 1.9.9V22h2v-2.2c.7-.2 1.3-.5 1.9-.9l2.2 2.2 1.4-1.4-1.4-1.4c.3-.4.6-.8.8-1.3H19v-2h-2.1c0-.3.1-.7.1-1H19v-2h-2.1c0-.3-.1-.7-.1-1H19V7zm-6 8h-2v-2h2v2zm0-4h-2V9h2v2z"/></svg></div>
+            <!-- User Icon -->
+            <div class="act-icon" style="margin-top: auto;"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg></div>
         </div>
 
         <div class="sidebar">
@@ -115,12 +136,10 @@
                 <div class="tree-item"><span style="color:#e37933">⌄</span> src</div>
                 <div class="tree-item active" style="padding-left:30px;"><span style="color:#cbcb41">{}</span> word_matrix.json</div>
                 <div class="tree-item" style="padding-left:30px;">📄 hardware.ts</div>
-                <div class="tree-item" style="padding-left:30px;">📄 types.d.ts</div>
                 <div class="tree-item">📄 package.json</div>
             </div>
             <div class="sidebar-header">Source Control</div>
             <div class="file-tree staging-area" id="stagingArea">
-                <!-- Les indices préparés apparaîtront ici directements -->
                 <div style="padding: 10px; color: #666; font-style: italic;">No staged changes...</div>
             </div>
         </div>
@@ -168,33 +187,27 @@
 
     <script>
         const SUPABASE_URL = 'https://ftvxmlxdovbgcxdayzvn.supabase.co'; 
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ0dnhtbHhkb3ZiZ2N4ZGF5enZvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg0NzgwNDcsImV4cCI6MjA5NDA1NDA0N30.IOHBBGzED0FV1xRYKOMsJapjACpeX2JVEhfNgXXT4B8'; 
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ0dnhtbHhkb3ZiZ2N4ZGF5enZuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg0NzgwNDcsImV4cCI6MjA5NDA1NDA0N30.IOHBBGzED0FV1xRYKOMsJapjACpeX2JVEhfNgXXT4B8'; 
         const mySupabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
         const myRole = (new URLSearchParams(window.location.search).get('role') || 'A').toUpperCase();
 
-        // GESTION DES INDICES EN ATTENTE
         let pendingClues = JSON.parse(localStorage.getItem('pending_clues') || '[]');
 
         function updateSidebar() {
             const staging = document.getElementById('stagingArea');
             staging.innerHTML = '';
-            
             if (pendingClues.length === 0) {
                 staging.innerHTML = '<div style="padding: 10px; color: #666; font-style: italic;">No staged changes...</div>';
                 return;
             }
-
             pendingClues.forEach((c, index) => {
                 const item = document.createElement('div');
                 item.className = 'tree-item pending-file';
-                // Affichage direct : "INDICE (Nombre)"
                 item.innerHTML = `M <span class="clue-val">${c.text.toUpperCase()}</span> (${c.num})`;
-                
                 item.onclick = () => {
                     document.getElementById('clueText').value = c.text;
                     document.getElementById('clueNum').value = c.num;
                 };
-
                 item.oncontextmenu = (e) => {
                     e.preventDefault();
                     pendingClues.splice(index, 1);
@@ -219,7 +232,6 @@
             }
         };
 
-        // FONCTIONS DE JEU
         async function startNewGame() {
             const { data: bank } = await mySupabase.from('word_bank').select('word');
             const shuffled = bank.sort(() => 0.5 - Math.random()).slice(0, 25);
