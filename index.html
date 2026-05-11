@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Visual Studio Code - word_matrix.json</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         body { background: #1e1e1e; color: #d4d4d4; font-family: 'Consolas', 'Courier New', monospace; margin: 0; display: flex; height: 100vh; font-size: 13px; overflow: hidden; }
         .sidebar { width: 220px; background: #252526; border-right: 1px solid #333; padding: 10px; display: flex; flex-direction: column; }
@@ -47,6 +48,7 @@
     </div>
 
     <script>
+        // Injection Supabase
         const script = document.createElement('script');
         script.src = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2";
         script.onload = () => startApp();
@@ -57,11 +59,11 @@
             const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ0dnhtbHhkb3ZiZ2N4ZGF5enZuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg0NzgwNDcsImV4cCI6MjA5NDA1NDA0N30.IOHBBGzED0FV1xRYKOMsJapjACpeX2JVEhfNgXXT4B8'; 
             const mySupabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
             const urlParams = new URLSearchParams(window.location.search);
-            const myRole = urlParams.get('role') || 'A'; 
+            const myRole = (urlParams.get('role') || 'A').toUpperCase(); 
 
             async function loadGame() {
                 const { data, error } = await mySupabase.from('game_state').select('*').order('id', { ascending: true });
-                if (error) return;
+                if (error) { console.error(error); return; }
 
                 const board = document.getElementById('board');
                 board.innerHTML = ''; 
@@ -71,33 +73,42 @@
                     div.className = 'word';
                     div.innerText = `"${item.word}",`;
 
-                    // Déterminer le statut actuel pour CE joueur
-                    const myStatus = (myRole === 'A') ? item.status_a : item.status_b;
+                    // Gestion des statuts
+                    const statusMe = (myRole === 'A') ? item.status_a : item.status_b;
+                    const statusOther = (myRole === 'A') ? item.status_b : item.status_a;
                     
-                    // 1. Si le mot est trouvé par n'importe qui (Agent ou Assassin)
-                    if (item.status_a === 'agent' || item.status_b === 'agent') div.classList.add('agent');
-                    else if (item.status_a === 'assassin' || item.status_b === 'assassin') div.classList.add('assassin');
-                    
-                    // 2. Si c'est une erreur INDIVIDUELLE (Civil)
-                    else if (myStatus === 'civil') div.classList.add('civil');
+                    // Si le mot est trouvé par quelqu'un ou est l'assassin
+                    if (item.status_a === 'agent' || item.status_b === 'agent') {
+                        div.classList.add('agent');
+                    } else if (item.status_a === 'assassin' || item.status_b === 'assassin') {
+                        div.classList.add('assassin');
+                    } else if (statusMe === 'civil') {
+                        div.classList.add('civil');
+                    }
 
-                    // 3. Afficher les indices si le mot n'est pas "fini"
+                    // Affichage des indices personnels (si pas déjà trouvé)
                     if (!div.classList.contains('agent') && !div.classList.contains('assassin')) {
                         const myView = (myRole === 'A') ? item.role_a_view : item.role_b_view;
                         if (myView === 'green') div.classList.add('hint-green');
                         if (myView === 'black') div.classList.add('hint-black');
                     }
 
+                    // Logique du clic
                     div.onclick = async () => {
+                        // On ne peut cliquer que si le mot est "neutre" OU "civil" chez nous 
+                        // (pour permettre de trouver un mot que l'autre a besoin même si on s'est trompé avant)
                         if (div.classList.contains('agent') || div.classList.contains('assassin')) return;
+                        
+                        // Si le mot est déjà civil CHEZ MOI, on peut quand même cliquer pour tenter l'agent de l'autre
+                        if (statusMe === 'agent' || statusMe === 'assassin') return;
 
                         const otherView = (myRole === 'A') ? item.role_b_view : item.role_a_view;
-                        let resultStatus = 'civil'; 
-                        if (otherView === 'green') resultStatus = 'agent';
-                        if (otherView === 'black') resultStatus = 'assassin';
+                        let result = 'civil'; 
+                        if (otherView === 'green') result = 'agent';
+                        if (otherView === 'black') result = 'assassin';
 
-                        // On ne met à jour que la colonne du joueur actuel
-                        const updateData = (myRole === 'A') ? { status_a: resultStatus } : { status_b: resultStatus };
+                        const updateData = (myRole === 'A') ? { status_a: result } : { status_b: result };
+                        
                         await mySupabase.from('game_state').update(updateData).eq('id', item.id);
                         loadGame(); 
                     };
