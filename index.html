@@ -3,7 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <title>Visual Studio Code - word_matrix.json</title>
-    <!-- Chargement prioritaire de Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root {
@@ -27,6 +26,7 @@
 
         body { background: var(--bg-darker); color: var(--text-main); font-family: 'Segoe UI', sans-serif; margin: 0; display: flex; flex-direction: column; height: 100vh; font-size: 13px; overflow: hidden; }
 
+        /* TOP BAR */
         .top-menu { background: var(--bg-darker); height: 35px; display: flex; align-items: center; padding: 0; flex-shrink: 0; }
         .menu-items { display: flex; gap: 12px; padding: 0 10px; font-size: 12px; color: #bbb; width: 240px; }
         .search-container { flex-grow: 1; display: flex; align-items: center; justify-content: center; gap: 10px; }
@@ -36,16 +36,22 @@
         .win-btn:hover { background: #333; }
 
         .layout-middle { display: flex; flex-grow: 1; overflow: hidden; }
+
+        /* ACTIVITY BAR */
         .activity-bar { width: 48px; background: var(--bg-activity); display: flex; flex-direction: column; align-items: center; padding: 10px 0; gap: 15px; border-right: 1px solid var(--border); flex-shrink: 0; }
         .act-icon { width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--icon-grey); }
         .act-icon.active { color: #fff; border-left: 2px solid #fff; }
 
+        /* SIDEBAR (AVEC INDICES EN ATTENTE) */
         .sidebar { width: 260px; background: var(--bg-sidebar); display: flex; flex-direction: column; flex-shrink: 0; border-right: 1px solid var(--border); }
         .sidebar-header { padding: 10px 20px; font-size: 11px; color: #bbbbbb; text-transform: uppercase; font-weight: bold; }
         .file-tree { padding: 5px 0; color: #cccccc; overflow-y: auto; flex-grow: 1; }
-        .tree-item { display: flex; align-items: center; padding: 3px 15px; cursor: pointer; gap: 6px; }
+        .tree-item { display: flex; align-items: center; padding: 3px 15px; cursor: pointer; gap: 6px; white-space: nowrap; font-size: 12px; }
+        .tree-item:hover { background: #2a2d2e; }
         .tree-item.active { background: #37373d; color: #fff; }
+        .tree-item.pending-file { color: #e2c08d; font-style: italic; } /* Couleur "Modified" VS Code */
 
+        /* MAIN CONTENT */
         .main-content { flex-grow: 1; display: flex; flex-direction: column; background: var(--bg-main); overflow: hidden; }
         .tabs { background: var(--bg-sidebar); display: flex; height: 35px; align-items: center; flex-shrink: 0; }
         .tab { padding: 0 12px; background: var(--bg-sidebar); color: #969696; border-right: 1px solid var(--bg-darker); height: 100%; display: flex; align-items: center; gap: 8px; font-size: 12px; }
@@ -66,15 +72,13 @@
         .assassin .val { color: #f44747 !important; font-weight: bold; }
         .assassin::after { content: " // FATAL_ERROR"; color: #f44747; font-size: 11px; }
 
+        /* TERMINAL */
         .terminal-panel { height: 220px; background: var(--bg-terminal); border-top: 1px solid var(--border); display: flex; flex-direction: column; }
         .terminal-tabs { background: var(--bg-main); display: flex; padding: 0 20px; gap: 20px; height: 30px; align-items: center; border-bottom: 1px solid #2d2d2d; font-size: 11px; color: #858585; }
         .terminal-tab.active { color: #fff; border-bottom: 1px solid #fff; }
         .terminal-content { flex-grow: 1; padding: 12px 20px; overflow-y: auto; font-family: 'Consolas', monospace; font-size: 12px; color: #cccccc; }
         
-        .history-log { color: #a0a0a0; margin-bottom: 4px; line-height: 1.4; border-bottom: 1px solid #222; padding-bottom: 2px; }
-        .hist-agent { color: var(--term-agent); font-weight: bold; }
-        .hist-civil { color: var(--term-civil); text-decoration: line-through; }
-        .hist-assassin { color: var(--term-assassin); font-weight: bold; }
+        .history-log { color: #a0a0a0; margin-bottom: 4px; border-bottom: 1px solid #222; }
         .term-prompt { color: #6a9955; font-weight: bold; }
 
         .deploy-btn { background: var(--vscode-blue); color: white; border: none; padding: 4px 12px; font-size: 11px; cursor: pointer; border-radius: 2px; }
@@ -111,9 +115,10 @@
 
         <div class="sidebar">
             <div class="sidebar-header">Explorer: DUO_SYSTEM</div>
-            <div class="file-tree">
+            <div class="file-tree" id="fileTree">
                 <div class="tree-item"><span style="color:#e37933">⌄</span> src</div>
                 <div class="tree-item active" style="padding-left:30px;"><span style="color:#cbcb41">{}</span> word_matrix.json</div>
+                <!-- Les indices en attente apparaîtront ici -->
             </div>
         </div>
 
@@ -141,11 +146,12 @@
                     <div id="clueHistory" style="overflow-y: auto; flex-grow: 1;"></div>
                     <div style="display:flex; gap:12px; align-items:center; margin-top:10px; border-top: 1px solid #333; padding-top: 8px;">
                         <span class="term-prompt">antoine@toulouse:~$</span>
-                        <span>clue --send</span>
+                        <span>clue --prep</span>
                         <input type="text" id="clueText" style="background:transparent; border:none; color:var(--syntax-string); outline:none; width:130px; font-family:inherit;" placeholder='"string"'>
                         <span>-n</span>
                         <input type="number" id="clueNum" style="background:transparent; border:none; color:var(--syntax-string); width:30px; font-family:inherit;" value="1">
-                        <button id="sendClueBtn" class="deploy-btn" style="background:#333; border: 1px solid #444;">EXEC</button>
+                        <button id="queueClueBtn" class="deploy-btn" style="background:#444; border: 1px solid #555;">STAGING</button>
+                        <button id="sendClueBtn" class="deploy-btn" style="background:#333; border: 1px solid #444;">PUSH_LIVE</button>
                     </div>
                 </div>
             </div>
@@ -158,120 +164,147 @@
     </div>
 
     <script>
-        // Configuration Supabase
         const SUPABASE_URL = 'https://ftvxmlxdovbgcxdayzvn.supabase.co'; 
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ0dnhtbHhkb3ZiZ2N4ZGF5enZuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg0NzgwNDcsImV4cCI6MjA5NDA1NDA0N30.IOHBBGzED0FV1xRYKOMsJapjACpeX2JVEhfNgXXT4B8'; 
-        
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ0dnhtbHhkb3ZiZ2N4ZGF5enZvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg0NzgwNDcsImV4cCI6MjA5NDA1NDA0N30.IOHBBGzED0FV1xRYKOMsJapjACpeX2JVEhfNgXXT4B8'; 
         const mySupabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
         const myRole = (new URLSearchParams(window.location.search).get('role') || 'A').toUpperCase();
 
+        // GESTION DES INDICES EN ATTENTE (LocalStorage)
+        let pendingClues = JSON.parse(localStorage.getItem('pending_clues') || '[]');
+
+        function updateSidebar() {
+            const tree = document.getElementById('fileTree');
+            // On nettoie les anciens fichiers de staging
+            document.querySelectorAll('.pending-file').forEach(el => el.remove());
+            
+            pendingClues.forEach((c, index) => {
+                const item = document.createElement('div');
+                item.className = 'tree-item pending-file';
+                item.style.paddingLeft = '30px';
+                item.innerHTML = `<span style="color:#e2c08d">patch</span> patch_v${index+1}.diff`;
+                item.onclick = () => {
+                    document.getElementById('clueText').value = c.text;
+                    document.getElementById('clueNum').value = c.num;
+                };
+                // Bouton supprimer discret au clic droit
+                item.oncontextmenu = (e) => {
+                    e.preventDefault();
+                    pendingClues.splice(index, 1);
+                    savePending();
+                };
+                tree.appendChild(item);
+            });
+        }
+
+        function savePending() {
+            localStorage.setItem('pending_clues', JSON.stringify(pendingClues));
+            updateSidebar();
+        }
+
+        document.getElementById('queueClueBtn').onclick = () => {
+            const text = document.getElementById('clueText').value;
+            const num = document.getElementById('clueNum').value;
+            if(text) {
+                pendingClues.push({ text, num });
+                savePending();
+                document.getElementById('clueText').value = '';
+            }
+        };
+
+        // --- FONCTIONS DE JEU ---
+
         async function startNewGame() {
-            try {
-                const { data: bank } = await mySupabase.from('word_bank').select('word');
-                if (!bank || bank.length < 25) { alert("Banque de mots insuffisante !"); return; }
-                const shuffled = bank.sort(() => 0.5 - Math.random()).slice(0, 25);
-                const roles = Array(25).fill(null).map(() => ({ a: 'neutral', b: 'neutral' }));
-                const idx = [...Array(25).keys()].sort(() => 0.5 - Math.random());
-                idx.slice(0, 3).forEach(i => { roles[i].a='green'; roles[i].b='green'; });
-                idx.slice(3, 9).forEach(i => roles[i].a='green');
-                idx.slice(9, 15).forEach(i => roles[i].b='green');
-                roles[idx[15]].a='black'; roles[idx[16]].b='black'; roles[idx[17]].a='black'; roles[idx[17]].b='black';
-                const boardData = shuffled.map((w, i) => ({ word: w.word, role_a_view: roles[i].a, role_b_view: roles[i].b, status_a: 'neutral', status_b: 'neutral' }));
-                
-                await mySupabase.from('game_state').delete().neq('id', 0);
-                await mySupabase.from('game_state').insert(boardData);
-                await mySupabase.from('game_hints').delete().neq('id', 0);
-                await mySupabase.from('game_control').update({ current_turn: 'A' }).eq('id', 1);
-                location.reload();
-            } catch(e) { console.error(e); }
+            const { data: bank } = await mySupabase.from('word_bank').select('word');
+            const shuffled = bank.sort(() => 0.5 - Math.random()).slice(0, 25);
+            const roles = Array(25).fill(null).map(() => ({ a: 'neutral', b: 'neutral' }));
+            const idx = [...Array(25).keys()].sort(() => 0.5 - Math.random());
+            idx.slice(0, 3).forEach(i => { roles[i].a='green'; roles[i].b='green'; });
+            idx.slice(3, 9).forEach(i => roles[i].a='green');
+            idx.slice(9, 15).forEach(i => roles[i].b='green');
+            roles[idx[15]].a='black'; roles[idx[16]].b='black'; roles[idx[17]].a='black'; roles[idx[17]].b='black';
+            const boardData = shuffled.map((w, i) => ({ word: w.word, role_a_view: roles[i].a, role_b_view: roles[i].b, status_a: 'neutral', status_b: 'neutral' }));
+            await mySupabase.from('game_state').delete().neq('id', 0);
+            await mySupabase.from('game_state').insert(boardData);
+            await mySupabase.from('game_hints').delete().neq('id', 0);
+            await mySupabase.from('game_control').update({ current_turn: 'A' }).eq('id', 1);
+            location.reload();
         }
 
         document.getElementById('newGameBtn').onclick = startNewGame;
+        
         document.getElementById('sendClueBtn').onclick = async () => {
             const text = document.getElementById('clueText').value;
             const num = document.getElementById('clueNum').value;
-            if(text) await mySupabase.from('game_hints').insert([{ clue_text: text, clue_number: num, sent_by: myRole }]);
-            document.getElementById('clueText').value = '';
+            if(text) {
+                await mySupabase.from('game_hints').insert([{ clue_text: text, clue_number: num, sent_by: myRole }]);
+                // Si l'indice envoyé était un indice en attente, on peut le retirer (optionnel)
+                const pIndex = pendingClues.findIndex(c => c.text === text);
+                if(pIndex !== -1) { pendingClues.splice(pIndex, 1); savePending(); }
+                document.getElementById('clueText').value = '';
+            }
         };
+
         document.getElementById('endTurnBtn').onclick = async () => {
             const next = (myRole === 'A') ? 'B' : 'A';
             await mySupabase.from('game_control').update({ current_turn: next }).eq('id', 1);
         };
 
         async function loadGame() {
-            try {
-                const { data: ctrl } = await mySupabase.from('game_control').select('current_turn').single();
-                const { data: words } = await mySupabase.from('game_state').select('*').order('id', { ascending: true });
-                const { data: hints } = await mySupabase.from('game_hints').select('*').order('created_at', { ascending: true });
+            const { data: ctrl } = await mySupabase.from('game_control').select('current_turn').single();
+            const { data: words } = await mySupabase.from('game_state').select('*').order('id', { ascending: true });
+            const { data: hints } = await mySupabase.from('game_hints').select('*').order('created_at', { ascending: true });
+            
+            if (!words || words.length === 0) { document.getElementById('newGameBtn').style.display = 'inline-block'; return; }
+            const isGameOver = words.some(w => w.status_a === 'assassin' || w.status_b === 'assassin');
+            const allFound = words.filter(w => w.status_a === 'agent' || w.status_b === 'agent').length >= 15;
+            const isMyTurn = ctrl.current_turn === myRole;
+
+            document.getElementById('newGameBtn').style.display = (isGameOver || allFound) ? 'inline-block' : 'none';
+            document.getElementById('turnIndicator').innerText = isGameOver ? "FATAL_ERROR" : (allFound ? "SUCCESS" : `ROLE_${ctrl.current_turn}_ACTIVE`);
+            
+            const board = document.getElementById('board');
+            board.className = (isMyTurn && !isGameOver) ? "grid" : "grid not-your-turn";
+            board.innerHTML = '';
+            
+            words.forEach((item, i) => {
+                const row = document.createElement('div');
+                row.className = 'word-row';
+                const idStr = (i + 1).toString().padStart(2, '0');
+                row.innerHTML = `<span class="key">"node_${idStr}"</span>: <span class="val">"${item.word}"</span>,`;
                 
-                if (!words || words.length === 0) { 
-                    document.getElementById('board').innerText = "SYSTEM_IDLE: NO_ACTIVE_KERNEL";
-                    document.getElementById('newGameBtn').style.display = 'inline-block'; 
-                    return; 
+                const statusMe = (myRole === 'A') ? item.status_a : item.status_b;
+                if(item.status_a === 'assassin' || item.status_b === 'assassin') row.classList.add('assassin');
+                else if(item.status_a === 'agent' || item.status_b === 'agent') row.classList.add('agent');
+                else if(statusMe === 'civil') row.classList.add('civil');
+                
+                const viewMe = (myRole === 'A') ? item.role_a_view : item.role_b_view;
+                if(!row.classList.contains('agent') && !row.classList.contains('assassin')){
+                    if(viewMe === 'green') row.classList.add('hint-green');
+                    if(viewMe === 'black') row.classList.add('hint-black');
                 }
-                
-                const isGameOver = words.some(w => w.status_a === 'assassin' || w.status_b === 'assassin');
-                const allFound = words.filter(w => w.status_a === 'agent' || w.status_b === 'agent').length >= 15;
-                const isMyTurn = ctrl && ctrl.current_turn === myRole;
 
-                document.getElementById('newGameBtn').style.display = (isGameOver || allFound) ? 'inline-block' : 'none';
-                document.getElementById('statusBar').style.background = isGameOver ? "#e51400" : (allFound ? "#4a7a3c" : "#007acc");
-                document.getElementById('turnIndicator').innerText = isGameOver ? "ERR_CRITICAL" : (allFound ? "DEPLOYED" : `LINE: ROLE_${ctrl ? ctrl.current_turn : '?'}_ACTIVE`);
-                
-                const board = document.getElementById('board');
-                board.className = (isMyTurn && !isGameOver) ? "grid" : "grid not-your-turn";
-                board.innerHTML = '';
-                
-                words.forEach((item, i) => {
-                    const row = document.createElement('div');
-                    row.className = 'word-row';
-                    const idStr = (i + 1).toString().padStart(2, '0');
-                    row.innerHTML = `<span class="key">"node_${idStr}"</span>: <span class="val">"${item.word}"</span>,`;
-                    
-                    const statusMe = (myRole === 'A') ? item.status_a : item.status_b;
-                    if(item.status_a === 'assassin' || item.status_b === 'assassin') row.classList.add('assassin');
-                    else if(item.status_a === 'agent' || item.status_b === 'agent') row.classList.add('agent');
-                    else if(statusMe === 'civil') row.classList.add('civil');
-                    
-                    const viewMe = (myRole === 'A') ? item.role_a_view : item.role_b_view;
-                    if(!row.classList.contains('agent') && !row.classList.contains('assassin')){
-                        if(viewMe === 'green') row.classList.add('hint-green');
-                        if(viewMe === 'black') row.classList.add('hint-black');
+                row.onclick = async () => {
+                    const otherView = (myRole === 'A') ? item.role_b_view : item.role_a_view;
+                    let res = 'civil';
+                    if(otherView === 'green') res = 'agent';
+                    if(otherView === 'black') res = 'assassin';
+                    if (hints && hints.length > 0) {
+                        const last = hints[hints.length-1];
+                        const upd = last.revealed_words ? (last.revealed_words + ',' + item.word + ':' + res) : (item.word + ':' + res);
+                        await mySupabase.from('game_hints').update({ revealed_words: upd }).eq('id', last.id);
                     }
+                    await mySupabase.from('game_state').update((myRole === 'A') ? {status_a: res} : {status_b: res}).eq('id', item.id);
+                    if(res === 'civil') document.getElementById('endTurnBtn').click();
+                };
+                board.appendChild(row);
+            });
 
-                    row.onclick = async () => {
-                        const otherView = (myRole === 'A') ? item.role_b_view : item.role_a_view;
-                        let res = 'civil';
-                        if(otherView === 'green') res = 'agent';
-                        if(otherView === 'black') res = 'assassin';
-                        
-                        if (hints && hints.length > 0) {
-                            const last = hints[hints.length-1];
-                            const upd = last.revealed_words ? (last.revealed_words + ',' + item.word + ':' + res) : (item.word + ':' + res);
-                            await mySupabase.from('game_hints').update({ revealed_words: upd }).eq('id', last.id);
-                        }
-                        await mySupabase.from('game_state').update((myRole === 'A') ? {status_a: res} : {status_b: res}).eq('id', item.id);
-                        if(res === 'civil') document.getElementById('endTurnBtn').click();
-                    };
-                    board.appendChild(row);
-                });
-
-                const hist = document.getElementById('clueHistory');
-                hist.innerHTML = hints ? hints.map(h => {
-                    let wordsHtml = '';
-                    if (h.revealed_words) {
-                        h.revealed_words.split(',').forEach(w => {
-                            const parts = w.split(':');
-                            if (parts.length === 2) wordsHtml += ` <span class="hist-${parts[1]}">${parts[0]}</span>`;
-                        });
-                    }
-                    return `<div class="history-log">// [${h.sent_by}] stream_in: "${h.clue_text}" (${h.clue_number}) -> ${wordsHtml || '...'}</div>`;
-                }).join('') : '';
-                hist.scrollTop = hist.scrollHeight;
-            } catch (err) { console.error("Load Error:", err); }
+            const hist = document.getElementById('clueHistory');
+            hist.innerHTML = hints ? hints.map(h => `<div class="history-log">// [${h.sent_by}] clue: "${h.clue_text}" (${h.clue_number})</div>`).join('') : '';
+            hist.scrollTop = hist.scrollHeight;
         }
-        
-        // Démarrage de la boucle de rafraîchissement
+
+        updateSidebar();
         setInterval(loadGame, 2000);
         loadGame();
     </script>
