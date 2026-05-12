@@ -270,9 +270,9 @@
             // 3 Verts communs
             idx.slice(0, 3).forEach(i => { roles[i].a='green'; roles[i].b='green'; });
             // 6 Verts pour A (Total A = 3+6=9)
-            idx.slice(3, 9).forEach(i => roles[i].a='green');
+            idx.slice(4, 9).forEach(i => roles[i].a='green');
             // 6 Verts pour B (Total B = 3+6=9)
-            idx.slice(9, 15).forEach(i => roles[i].b='green');
+            idx.slice(10, 15).forEach(i => roles[i].b='green');
             
             // Assassins
             roles[idx[15]].a = 'black'; roles[idx[15]].b = 'black';
