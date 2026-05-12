@@ -125,10 +125,7 @@
             <div class="act-icon active"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg></div>
             <div class="act-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.1 12.5a2.1 2.1 0 0 0-2-1.5c-1 0-1.8.7-2 1.6l-5.1-3.1c.1-.3.1-.7.1-1a2.1 2.1 0 1 0-4.2 0c0 .4 0 .7.2 1l5 3.1c-.1.3-.1.7-.1 1a2.1 2.1 0 1 0 4.2 0c0-.4 0-.7-.2-1l5.1-3.1c.1.3.1.7.1 1a2.1 2.1 0 1 0 4.2 0c0-.4 0-.7-.2-1l-5.2-3.1z"/></svg></div>
             <div class="act-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 7h-2.1c-.2-.5-.5-.9-.8-1.3l1.4-1.4-1.4-1.4-2.2 2.2c-.6-.4-1.2-.7-1.9-.9V2h-2v2.2c-.7.2-1.3.5-1.9.9L5.9 2.9 4.5 4.3l1.4 1.4c-.3.4-.6.8-.8 1.3H3v2h2.1c0 .3-.1.7-.1 1H3v2h2.1c0 .3.1.7.1 1H3v2h2.1c.2.5.5.9.8 1.3l-1.4 1.4 1.4 1.4 2.2-2.2c.6.4 1.2.7 1.9.9V22h2v-2.2c.7-.2 1.3-.5 1.9-.9l2.2 2.2 1.4-1.4-1.4-1.4c.3-.4.6-.8.8-1.3H19v-2h-2.1c0-.3.1-.7.1-1H19v-2h-2.1c0-.3-.1-.7-.1-1H19V7zm-6 8h-2v-2h2v2zm0-4h-2V9h2v2z"/></svg></div>
-            <div class="act-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 13H5v-2h14v2zM5 15h14v2H5v-2zM5 9h14V7H5v2zM21 3H3a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h18a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2z"/></svg></div>
-            <div class="act-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.5 11H19V7h-4V5.5a2.5 2.5 0 0 0-5 0V7H6v4H4.5a2.5 2.5 0 0 0 0 5H6v4h4v-1.5a2.5 2.5 0 0 1 5 0V20h4v-4h1.5a2.5 2.5 0 0 0 0-5z"/></svg></div>
             <div class="act-icon" style="margin-top: auto;"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg></div>
-            <div class="act-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M19.14 12.94c.04-.3.06-.61.06-.94s-.02-.64-.06-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.04.3-.06.61-.06.94s.02.64.06.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg></div>
         </div>
 
         <div class="sidebar">
@@ -265,15 +262,27 @@
         };
 
         async function startNewGame() {
-            localStorage.removeItem('pending_clues'); // BUG FIX: Effacer Source Control
+            localStorage.removeItem('pending_clues');
             const { data: bank } = await mySupabase.from('word_bank').select('word');
             const shuffled = bank.sort(() => 0.5 - Math.random()).slice(0, 25);
+            
             const roles = Array(25).fill(null).map(() => ({ a: 'neutral', b: 'neutral' }));
             const idx = [...Array(25).keys()].sort(() => 0.5 - Math.random());
+            
+            // 3 Verts communs
             idx.slice(0, 3).forEach(i => { roles[i].a='green'; roles[i].b='green'; });
+            // 6 Verts uniques pour A
             idx.slice(3, 9).forEach(i => roles[i].a='green');
+            // 6 Verts uniques pour B
             idx.slice(9, 15).forEach(i => roles[i].b='green');
-            roles[idx[15]].a='black'; roles[idx[16]].b='black'; roles[idx[17]].a='black'; roles[idx[17]].b='black';
+            
+            // LOGIQUE NOIRS (ASSASSINS) DUEL
+            roles[idx[15]].a = 'black'; roles[idx[15]].b = 'black'; // 1 Commun
+            roles[idx[16]].a = 'black'; roles[idx[16]].b = 'green'; // 1 Noir A / Vert B
+            roles[idx[17]].a = 'black'; roles[idx[17]].b = 'neutral'; // 1 Noir A / Gris B
+            roles[idx[18]].b = 'black'; roles[idx[18]].a = 'green'; // 1 Noir B / Vert A
+            roles[idx[19]].b = 'black'; roles[idx[19]].a = 'neutral'; // 1 Noir B / Gris A
+
             const boardData = shuffled.map((w, i) => ({ word: w.word, role_a_view: roles[i].a, role_b_view: roles[i].b, status_a: 'neutral', status_b: 'neutral' }));
             await mySupabase.from('game_state').delete().neq('id', 0);
             await mySupabase.from('game_state').insert(boardData);
@@ -337,6 +346,7 @@
                 };
                 board.appendChild(row);
             });
+
             const hist = document.getElementById('clueHistory');
             hist.innerHTML = hints ? hints.map(h => {
                 let revealedStr = '';
