@@ -72,7 +72,8 @@
         .key { color: var(--syntax-key); }
         .val { color: var(--syntax-string); }
 
-        .agent, .civil, .assassin { pointer-events: none; }
+        /* SÉCURITÉ ET ÉTATS */
+        .agent, .civil, .assassin { pointer-events: none !important; }
         .agent .val { color: var(--syntax-comment) !important; font-style: italic; }
         .agent::after { content: " // OK_SYNC"; color: var(--syntax-comment); font-size: 11px; }
         .civil { opacity: 0.3; }
@@ -82,19 +83,9 @@
 
         /* PASTILLE GUESS SYNCHRONISÉE */
         .guessed::before {
-            content: "";
-            position: absolute;
-            left: -12px;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 8px;
-            height: 8px;
-            background-color: #007acc;
-            border-radius: 50%;
-            box-shadow: 0 0 8px #007acc;
-            animation: pulse 2s infinite;
+            content: ""; position: absolute; left: -12px; top: 50%; transform: translateY(-50%);
+            width: 8px; height: 8px; background-color: #007acc; border-radius: 50%; box-shadow: 0 0 8px #007acc;
         }
-        @keyframes pulse { 0% { opacity: 0.6; } 50% { opacity: 1; } 100% { opacity: 0.6; } }
 
         .terminal-panel { height: 220px; background: var(--bg-terminal); border-top: 1px solid var(--border); display: flex; flex-direction: column; }
         .terminal-tabs { background: var(--bg-main); display: flex; padding: 0 20px; height: 35px; align-items: center; border-bottom: 1px solid #2d2d2d; font-size: 11px; color: #858585; }
@@ -141,7 +132,10 @@
             <div class="act-icon active"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg></div>
             <div class="act-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.1 12.5a2.1 2.1 0 0 0-2-1.5c-1 0-1.8.7-2 1.6l-5.1-3.1c.1-.3.1-.7.1-1a2.1 2.1 0 1 0-4.2 0c0 .4 0 .7.2 1l5 3.1c-.1.3-.1.7-.1 1a2.1 2.1 0 1 0 4.2 0c0-.4 0-.7-.2-1l5.1-3.1c.1.3.1.7.1 1a2.1 2.1 0 1 0 4.2 0c0-.4 0-.7-.2-1l-5.2-3.1z"/></svg></div>
             <div class="act-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 7h-2.1c-.2-.5-.5-.9-.8-1.3l1.4-1.4-1.4-1.4-2.2 2.2c-.6-.4-1.2-.7-1.9-.9V2h-2v2.2c-.7.2-1.3.5-1.9.9L5.9 2.9 4.5 4.3l1.4 1.4c-.3.4-.6.8-.8 1.3H3v2h2.1c0 .3-.1.7-.1 1H3v2h2.1c0 .3.1.7.1 1H3v2h2.1c.2.5.5.9.8 1.3l-1.4 1.4 1.4 1.4 2.2-2.2c.6.4 1.2.7 1.9.9V22h2v-2.2c.7-.2 1.3-.5 1.9-.9l2.2 2.2 1.4-1.4-1.4-1.4c.3-.4.6-.8.8-1.3H19v-2h-2.1c0-.3.1-.7.1-1H19v-2h-2.1c0-.3-.1-.7-.1-1H19V7zm-6 8h-2v-2h2v2zm0-4h-2V9h2v2z"/></svg></div>
+            <div class="act-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 13H5v-2h14v2zM5 15h14v2H5v-2zM5 9h14V7H5v2zM21 3H3a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h18a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2z"/></svg></div>
+            <div class="act-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.5 11H19V7h-4V5.5a2.5 2.5 0 0 0-5 0V7H6v4H4.5a2.5 2.5 0 0 0 0 5H6v4h4v-1.5a2.5 2.5 0 0 1 5 0V20h4v-4h1.5a2.5 2.5 0 0 0 0-5z"/></svg></div>
             <div class="act-icon" style="margin-top: auto;"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg></div>
+            <div class="act-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M19.14 12.94c.04-.3.06-.61.06-.94s-.02-.64-.06-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.04.3-.06.61-.06.94s.02.64.06.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg></div>
         </div>
 
         <div class="sidebar">
@@ -150,6 +144,7 @@
                 <div class="tree-item"><span style="color:#ffffff">⌄</span> src</div>
                 <div class="tree-item active" style="padding-left:30px;"><span style="color:#cbcb41">{}</span> word_matrix.json</div>
                 <div class="tree-item" style="padding-left:30px;">📄 hardware.ts</div>
+                <div class="tree-item">📄 package.json</div>
             </div>
             <div class="sidebar-header">Source Control</div>
             <div class="file-tree staging-area" id="stagingArea"></div>
@@ -180,10 +175,14 @@
 
             <div class="terminal-panel">
                 <div class="terminal-tabs">
-                    <div class="terminal-tab">Problems</div><div class="terminal-tab active">Terminal</div>
+                    <div class="terminal-tab">Problems</div><div class="terminal-tab">Output</div><div class="terminal-tab">Debug Console</div><div class="terminal-tab active">Terminal</div><div class="terminal-tab">Ports</div>
                     <div class="terminal-actions-right">
                         <button id="newGameBtn" class="status-btn" style="color:#6a9955; display:none; font-weight:bold;">RELOAD_GAME</button>
                         <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/></svg>
+                        <svg viewBox="0 0 16 16" fill="currentColor"><path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/></svg>
+                        <svg viewBox="0 0 16 16" fill="currentColor"><path d="M3 9.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z"/></svg>
+                        <svg viewBox="0 0 16 16" fill="currentColor"><path d="M1.5 1a.5.5 0 0 0-.5.5v13a.5.5 0 0 0 .5.5h13a.5.5 0 0 0 .5-.5v-13a.5.5 0 0 0-.5-.5h-13z"/></svg>
+                        <svg viewBox="0 0 16 16" fill="currentColor"><path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/></svg>
                     </div>
                 </div>
                 <div class="terminal-content">
@@ -218,7 +217,7 @@
 
     <script>
         const SUPABASE_URL = 'https://ftvxmlxdovbgcxdayzvn.supabase.co'; 
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ0dnhtbHhkb3ZiZ2N4ZGF5enZuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg0NzgwNDcsImV4cCI6MjA5NDA1NDA0N30.IOHBBGzED0FV1xRYKOMsJapjACpeX2JVEhfNgXXT4B8'; 
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ0dnhtbHhkb3ZiZ2N4ZGF5enZvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg0NzgwNDcsImV4cCI6MjA5NDA1NDA0N30.IOHBBGzED0FV1xRYKOMsJapjACpeX2JVEhfNgXXT4B8'; 
         const mySupabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
         const myRole = (new URLSearchParams(window.location.search).get('role') || 'A').toUpperCase();
         let pendingClues = JSON.parse(localStorage.getItem('pending_clues') || '[]');
@@ -254,7 +253,6 @@
         };
 
         document.getElementById('endTurnBtn').onclick = async () => {
-            // Effacer TOUTES les pastilles en BDD au changement de tour
             await mySupabase.from('game_state').update({ is_guessed: false }).neq('id', 0);
             const next = (myRole === 'A') ? 'B' : 'A';
             await mySupabase.from('game_control').update({ current_turn: next }).eq('id', 1);
@@ -334,17 +332,16 @@
                         const upd = last.revealed_words ? (last.revealed_words + ',' + item.word + ':' + res) : (item.word + ':' + res);
                         await mySupabase.from('game_hints').update({ revealed_words: upd }).eq('id', last.id);
                     }
-                    // Quand on clique (révèle), on enlève forcément la pastille guess en BDD
                     await mySupabase.from('game_state').update((myRole === 'A') ? {status_a: res, is_guessed: false} : {status_b: res, is_guessed: false}).eq('id', item.id);
                     if(res === 'civil') document.getElementById('endTurnBtn').click();
                 };
 
                 row.oncontextmenu = async (e) => {
                     e.preventDefault();
-                    // Synchronisation BDD de la pastille (toggle)
-                    await mySupabase.from('game_state').update({ is_guessed: !item.is_guessed }).eq('id', item.id);
+                    if(!row.classList.contains('agent') && !row.classList.contains('assassin') && !row.classList.contains('civil')) {
+                        await mySupabase.from('game_state').update({ is_guessed: !item.is_guessed }).eq('id', item.id);
+                    }
                 };
-
                 board.appendChild(row);
             });
 
