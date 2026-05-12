@@ -19,77 +19,76 @@
             --syntax-keyword: #c586c0;
             --syntax-comment: #6a9955;
             --icon-grey: #858585;
+            --line-number: #858585;
         }
 
         body { background: var(--bg-darker); color: var(--text-main); font-family: 'Segoe UI', sans-serif; margin: 0; display: flex; flex-direction: column; height: 100vh; font-size: 13px; overflow: hidden; }
 
         .top-menu { background: var(--bg-darker); height: 35px; display: flex; align-items: center; padding: 0; flex-shrink: 0; }
-        .menu-items { display: flex; gap: 12px; padding: 0 10px; font-size: 12px; color: #bbb; width: 240px; }
+        .menu-items { display: flex; gap: 12px; padding: 0 10px; font-size: 12px; color: #bbb; }
         .menu-items span:hover { color: #fff; cursor: default; }
         
         .search-container { flex-grow: 1; display: flex; align-items: center; justify-content: center; gap: 10px; }
         .nav-arrows { display: flex; gap: 12px; color: var(--icon-grey); margin-right: 10px; }
-        .nav-arrows svg { cursor: pointer; opacity: 0.6; }
-        
         .search-bar-vscode { background: #3c3c3c; border: 1px solid #666; border-radius: 4px; width: 450px; height: 22px; display: flex; align-items: center; padding: 0 10px; color: #888; font-size: 11px; }
 
         .window-controls { display: flex; height: 100%; width: 135px; justify-content: flex-end; }
         .win-btn { width: 45px; display: flex; align-items: center; justify-content: center; cursor: default; }
         .win-btn:hover { background: #333; }
+        .win-btn.close:hover { background: #e81123; }
 
         .layout-middle { display: flex; flex-grow: 1; overflow: hidden; }
 
-        .activity-bar { width: 48px; background: var(--bg-activity); display: flex; flex-direction: column; align-items: center; padding: 10px 0; gap: 15px; border-right: 1px solid var(--border); flex-shrink: 0; }
-        .act-icon { width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--icon-grey); }
+        .activity-bar { width: 48px; background: var(--bg-activity); display: flex; flex-direction: column; align-items: center; padding: 10px 0; gap: 5px; border-right: 1px solid var(--border); flex-shrink: 0; }
+        .act-icon { width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--icon-grey); position: relative; }
         .act-icon:hover { color: #fff; }
-        .act-icon.active { color: #fff; border-left: 2px solid #fff; }
+        .act-icon.active { color: #fff; }
+        .act-icon.active::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 2px; background-color: var(--vscode-blue); }
         .act-icon svg { width: 24px; height: 24px; }
 
         .sidebar { width: 260px; background: var(--bg-sidebar); display: flex; flex-direction: column; flex-shrink: 0; border-right: 1px solid var(--border); }
-        .sidebar-header { padding: 10px 20px; font-size: 11px; color: #bbbbbb; text-transform: uppercase; font-weight: bold; border-bottom: 1px solid #333; }
+        .sidebar-header { padding: 10px 20px; font-size: 11px; color: #bbbbbb; text-transform: uppercase; font-weight: bold; display: flex; justify-content: space-between; align-items: center; }
+
         .file-tree { padding: 5px 0; color: #cccccc; overflow-y: auto; flex-grow: 1; }
         .tree-item { display: flex; align-items: center; padding: 4px 15px; cursor: pointer; gap: 6px; white-space: nowrap; font-size: 12px; }
         .tree-item:hover { background: #2a2d2e; }
         .tree-item.active { background: #37373d; color: #fff; }
         
         .staging-area { border-top: 1px solid #333; padding-top: 5px; background: rgba(0,0,0,0.1); max-height: 40%; overflow-y: auto; }
-        .pending-file { color: #e2c08d; font-family: 'Consolas', monospace; font-size: 11px; }
-        .pending-file span.clue-val { color: #ce9178; font-weight: bold; margin-right: 5px; }
 
         .main-content { flex-grow: 1; display: flex; flex-direction: column; background: var(--bg-main); overflow: hidden; }
         .tabs { background: var(--bg-sidebar); display: flex; height: 35px; align-items: center; flex-shrink: 0; }
-        .tab { padding: 0 12px; background: var(--bg-sidebar); color: #969696; border-right: 1px solid var(--bg-darker); height: 100%; display: flex; align-items: center; gap: 8px; font-size: 12px; }
+        .tab { padding: 0 12px; background: var(--bg-sidebar); color: #969696; border-right: 1px solid var(--bg-darker); height: 100%; display: flex; align-items: center; gap: 8px; font-size: 12px; position: relative; border-top: 1px solid transparent; }
         .tab.active { background: var(--bg-main); color: #fff; border-top: 1px solid var(--vscode-blue); }
+        .tab svg { width: 14px; height: 14px; }
+        .tab-close { margin-left: 5px; opacity: 0.7; font-size: 14px; cursor: pointer; }
 
-        .code-area { flex-grow: 1; padding: 25px 45px; overflow-y: auto; line-height: 1.5; font-family: 'Consolas', monospace; }
-        .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px 40px; margin: 10px 0 10px 20px; }
-        .word-row { cursor: pointer; white-space: nowrap; padding: 2px 5px; border-radius: 3px; border-left: 2px solid transparent; }
+        /* AJOUT NUMEROS DE LIGNES ET WRAPPER SCROLL */
+        .editor-view { display: flex; flex-grow: 1; overflow-y: auto; font-family: 'Consolas', monospace; line-height: 1.5; padding-top: 10px; }
+        .line-numbers { width: 45px; text-align: right; padding-right: 15px; color: var(--line-number); user-select: none; flex-shrink: 0; border-right: 1px solid transparent; }
+        .code-area { flex-grow: 1; padding-left: 10px; }
+        
+        .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0 40px; }
+        .word-row { cursor: pointer; white-space: nowrap; padding: 0 5px; border-radius: 3px; }
         .word-row:hover { background: #2a2d2e; }
         .key { color: var(--syntax-key); }
         .val { color: var(--syntax-string); }
-        
-        .agent .val { color: var(--syntax-comment) !important; font-style: italic; }
-        .agent::after { content: " // OK_SYNC"; color: var(--syntax-comment); font-size: 11px; }
-        .civil { opacity: 0.3; }
-        .civil .val { text-decoration: line-through; }
-        .assassin .val { color: #f44747 !important; font-weight: bold; }
-        .assassin::after { content: " // FATAL_ERROR"; color: #f44747; font-size: 11px; }
 
-        /* TERMINAL PANEL */
         .terminal-panel { height: 220px; background: var(--bg-terminal); border-top: 1px solid var(--border); display: flex; flex-direction: column; }
-        .terminal-tabs { background: var(--bg-main); display: flex; padding: 0 20px; height: 30px; align-items: center; border-bottom: 1px solid #2d2d2d; font-size: 11px; color: #858585; position: relative; }
-        .terminal-tabs-left { display: flex; gap: 20px; }
-        .terminal-tab { cursor: pointer; text-transform: uppercase; padding: 8px 0; }
-        .terminal-tab.active { color: #fff; border-bottom: 1px solid #fff; }
-        .terminal-tabs-right { margin-left: auto; display: flex; gap: 20px; }
+        .terminal-tabs { background: var(--bg-main); display: flex; padding: 0 20px; height: 35px; align-items: center; border-bottom: 1px solid #2d2d2d; font-size: 11px; color: #858585; }
+        .terminal-tab { cursor: pointer; text-transform: uppercase; padding: 8px 0; margin-right: 20px; }
+        .terminal-tab.active { color: #fff; border-bottom: 1px solid var(--vscode-blue); }
+        .terminal-actions-right { margin-left: auto; display: flex; gap: 15px; align-items: center; }
+        .terminal-actions-right svg { width: 14px; height: 14px; color: #858585; }
         
         .terminal-content { flex-grow: 1; padding: 12px 20px; overflow-y: auto; font-family: 'Consolas', monospace; font-size: 12px; color: #cccccc; }
-        .history-log { color: #a0a0a0; margin-bottom: 4px; border-bottom: 1px solid #222; }
         .term-prompt { color: #6a9955; font-weight: bold; }
 
-        .deploy-btn { background: var(--vscode-blue); color: white; border: none; padding: 4px 12px; font-size: 11px; cursor: pointer; border-radius: 2px; }
         .status-bar { background: var(--vscode-blue); color: white; padding: 0 12px; font-size: 11px; height: 22px; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; width: 100%; box-sizing: border-box; }
-        
+        .status-btn { background: transparent; border: none; color: white; font-size: 11px; padding: 0 10px; cursor: pointer; height: 100%; display: flex; align-items: center; gap: 5px; }
+        .status-btn:hover { background: rgba(255,255,255,0.1); }
+        .status-btn svg { width: 14px; height: 14px; }
+
         .hint-green { border-left: 2px solid #3e5a30; }
         .hint-black { border-left: 2px solid #4a1c1c; }
         .not-your-turn { opacity: 0.6; pointer-events: none; }
@@ -99,8 +98,7 @@
 
     <div class="top-menu">
         <div class="menu-items">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/9/9a/Visual_Studio_Code_1.35_icon.svg" width="16" style="margin-right: 5px;">
-            <span>File</span> <span>Edit</span> <span>Selection</span> <span>View</span>
+            <span>File</span> <span>Edit</span> <span>Selection</span> <span>View</span> <span>Go</span> <span>Run</span> <span>Terminal</span> <span>Help</span>
         </div>
         <div class="search-container">
             <div class="nav-arrows">
@@ -119,15 +117,18 @@
     <div class="layout-middle">
         <div class="activity-bar">
             <div class="act-icon active"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg></div>
-            <div class="act-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M18 15c-.58 0-1.11.23-1.5.6l-5.1-3.1a3 3 0 000-1l5.1-3.1c.39.37.92.6 1.5.6a3 3 0 100-6 3 3 0 00-3 3c0 .17.02.34.05.5L9.9 9.6c-.39-.37-.92-.6-1.5-.6a3 3 0 100 6c.58 0 1.11-.23 1.5-.6l5.1 3.1c-.03.16-.05.33-.05.5a3 3 0 103-3z"/></svg></div>
+            <div class="act-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.1 12.5a2.1 2.1 0 0 0-2-1.5c-1 0-1.8.7-2 1.6l-5.1-3.1c.1-.3.1-.7.1-1a2.1 2.1 0 1 0-4.2 0c0 .4 0 .7.2 1l5 3.1c-.1.3-.1.7-.1 1a2.1 2.1 0 1 0 4.2 0c0-.4 0-.7-.2-1l5.1-3.1c.1.3.1.7.1 1a2.1 2.1 0 1 0 4.2 0c0-.4 0-.7-.2-1l-5.2-3.1z"/></svg></div>
             <div class="act-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 7h-2.1c-.2-.5-.5-.9-.8-1.3l1.4-1.4-1.4-1.4-2.2 2.2c-.6-.4-1.2-.7-1.9-.9V2h-2v2.2c-.7.2-1.3.5-1.9.9L5.9 2.9 4.5 4.3l1.4 1.4c-.3.4-.6.8-.8 1.3H3v2h2.1c0 .3-.1.7-.1 1H3v2h2.1c0 .3.1.7.1 1H3v2h2.1c.2.5.5.9.8 1.3l-1.4 1.4 1.4 1.4 2.2-2.2c.6.4 1.2.7 1.9.9V22h2v-2.2c.7-.2 1.3-.5 1.9-.9l2.2 2.2 1.4-1.4-1.4-1.4c.3-.4.6-.8.8-1.3H19v-2h-2.1c0-.3.1-.7.1-1H19v-2h-2.1c0-.3-.1-.7-.1-1H19V7zm-6 8h-2v-2h2v2zm0-4h-2V9h2v2z"/></svg></div>
+            <div class="act-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 13H5v-2h14v2zM5 15h14v2H5v-2zM5 9h14V7H5v2zM21 3H3a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h18a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2z"/></svg></div>
+            <div class="act-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.5 11H19V7h-4V5.5a2.5 2.5 0 0 0-5 0V7H6v4H4.5a2.5 2.5 0 0 0 0 5H6v4h4v-1.5a2.5 2.5 0 0 1 5 0V20h4v-4h1.5a2.5 2.5 0 0 0 0-5z"/></svg></div>
             <div class="act-icon" style="margin-top: auto;"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg></div>
+            <div class="act-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M19.14 12.94c.04-.3.06-.61.06-.94s-.02-.64-.06-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.04.3-.06.61-.06.94s.02.64.06.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg></div>
         </div>
 
         <div class="sidebar">
-            <div class="sidebar-header">Explorer</div>
+            <div class="sidebar-header"> Explorer <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M3 9.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z"/></svg></div>
             <div class="file-tree" id="fileTree">
-                <div class="tree-item"><span style="color:#e37933">⌄</span> src</div>
+                <div class="tree-item"><span style="color:#ffffff">⌄</span> src</div>
                 <div class="tree-item active" style="padding-left:30px;"><span style="color:#cbcb41">{}</span> word_matrix.json</div>
                 <div class="tree-item" style="padding-left:30px;">📄 hardware.ts</div>
                 <div class="tree-item">📄 package.json</div>
@@ -141,29 +142,55 @@
         <div class="main-content">
             <div class="tabs">
                 <div class="tab">hardware.ts</div>
-                <div class="tab active">word_matrix.json</div>
-                <div style="margin-left: auto; padding-right: 15px; display: flex; align-items: center;">
-                    <button id="newGameBtn" class="deploy-btn" style="background:#4a7a3c; display:none; margin-right: 10px;">INITIALIZE_CORE</button>
-                    <button id="endTurnBtn" class="deploy-btn">PUSH_CHANGES</button>
+                <div class="tab active">
+                    <span style="color:#cbcb41; margin-right:5px;">{}</span> word_matrix.json <span class="tab-close">×</span>
                 </div>
             </div>
 
-            <div class="code-area">
-                <div><span class="syntax-keyword" style="color:var(--syntax-keyword)">export const</span> <span class="key">nodes</span> = <span class="json-bracket">[</span></div>
-                <div class="grid" id="board">... BOOTING ...</div>
-                <div><span class="json-bracket">]</span>;</div>
+            <div class="editor-view">
+                <div class="line-numbers" id="lineGutter"></div>
+                <div class="code-area">
+                    <div><span class="syntax-keyword" style="color:var(--syntax-keyword)">export const</span> <span class="key">nodes</span> = <span style="color:#ffd700">[</span></div>
+                    <div class="grid" id="board">... SYNCING ...</div>
+                    <div><span style="color:#ffd700">]</span>;</div>
+                    <!-- AJOUT DE CODE TECHNIQUE POUR LE SCROLL -->
+                    <div style="color:var(--syntax-comment); margin-top:20px;">
+                        // --- EMBEDDED SYSTEM KERNEL DRIVERS ---<br>
+                        <span style="color:var(--syntax-keyword)">async function</span> <span style="color:var(--syntax-key)">initBusProtocol</span>() {<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;const i2c = new I2C_Controller({ freq: <span style="color:var(--syntax-string)">400000</span> });<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;await i2c.handshake(<span style="color:var(--syntax-string)">0x3F</span>);<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;return i2c.status === 'READY';<br>
+                        }<br><br>
+                        <span style="color:var(--syntax-keyword)">function</span> <span style="color:var(--syntax-key)">watchdogRefresh</span>() {<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;if (mem_usage > <span style="color:var(--syntax-string)">0.85</span>) {<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;console.warn(<span style="color:var(--syntax-string)">"MEMORY_CRITICAL_REFRESH"</span>);<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;System.GC();<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;}<br>
+                        }<br><br>
+                        <span style="color:var(--syntax-keyword)">export const</span> <span style="color:var(--syntax-key)">BRIDGE_V2</span> = {<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;id: <span style="color:var(--syntax-string)">"GEII-78-T"</span>,<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;buffer: new Uint8Array(<span style="color:var(--syntax-string)">1024</span>),<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;flags: [<span style="color:var(--syntax-string)">"INT_EN"</span>, <span style="color:var(--syntax-string)">"DMA_BURST"</span>]<br>
+                        };<br><br>
+                        // EOF Matrix Definitions
+                        <div style="height: 500px;"></div>
+                    </div>
+                </div>
             </div>
 
             <div class="terminal-panel">
                 <div class="terminal-tabs">
-                    <div class="terminal-tabs-left">
-                        <div class="terminal-tab">Problems</div>
-                        <div class="terminal-tab">Output</div>
-                        <div class="terminal-tab">Debug Console</div>
-                        <div class="terminal-tab active">Terminal</div>
-                    </div>
-                    <div class="terminal-tabs-right">
-                        <div class="terminal-tab">Ports</div>
+                    <div class="terminal-tab">Problems</div>
+                    <div class="terminal-tab">Output</div>
+                    <div class="terminal-tab">Debug Console</div>
+                    <div class="terminal-tab active">Terminal</div>
+                    <div class="terminal-tab">Ports</div>
+                    <div class="terminal-actions-right">
+                        <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/></svg>
+                        <svg viewBox="0 0 16 16" fill="currentColor"><path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/></svg>
+                        <svg viewBox="0 0 16 16" fill="currentColor"><path d="M3 9.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z"/></svg>
+                        <svg viewBox="0 0 16 16" fill="currentColor"><path d="M1.5 1a.5.5 0 0 0-.5.5v13a.5.5 0 0 0 .5.5h13a.5.5 0 0 0 .5-.5v-13a.5.5 0 0 0-.5-.5h-13z"/></svg>
+                        <svg viewBox="0 0 16 16" fill="currentColor"><path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/></svg>
                     </div>
                 </div>
                 <div class="terminal-content">
@@ -174,8 +201,6 @@
                         <input type="text" id="clueText" style="background:transparent; border:none; color:var(--syntax-string); outline:none; width:130px; font-family:inherit;" placeholder='"string"'>
                         <span>-n</span>
                         <input type="number" id="clueNum" style="background:transparent; border:none; color:var(--syntax-string); width:30px; font-family:inherit;" value="1">
-                        <button id="queueClueBtn" class="deploy-btn" style="background:#444; border: 1px solid #555;">STAGING</button>
-                        <button id="sendClueBtn" class="deploy-btn" style="background:#333; border: 1px solid #444;">PUSH_LIVE</button>
                     </div>
                 </div>
             </div>
@@ -183,8 +208,35 @@
     </div>
 
     <div class="status-bar" id="statusBar">
-        <div><span>🌿 master*</span><span style="margin-left:15px;">0 △ 0 ▽</span></div>
-        <div><span id="turnIndicator">...</span><span style="margin-left:15px;">UTF-8</span><span style="margin-left:15px;">JSON</span></div>
+        <div style="display: flex; align-items: center; height: 100%;">
+            <div class="status-btn">
+                <svg viewBox="0 0 16 16" fill="currentColor" width="14"><path d="M8 2a6 6 0 1 0 0 12A6 6 0 0 0 8 2zM1 8a7 7 0 1 1 14 0A7 7 0 0 1 1 8z"/><path d="M7 10h2v1H7v-1zm0-6h2v5H7V4z"/></svg>
+                <span>Remote: master*</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px; margin: 0 10px; opacity: 0.8;">
+                <span style="display: flex; align-items: center; gap: 3px;">
+                    <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><path d="M7.938 2.016A.13.13 0 0 1 8.002 2a.13.13 0 0 1 .063.016.146.13 0 0 1 .054.057l6.857 11.667c.036.06.035.124.002.183a.163.163 0 0 1-.054.06.116.116 0 0 1-.066.017H1.146a.115.116 0 0 1-.066-.017.163.163 0 0 1-.054-.06.176.176 0 0 1 .002-.183L7.884 2.073a.147.147 0 0 1 .054-.057zm1.044-.454a1.15 1.15 0 0 0-1.964 0L.154 13.227a1.173 1.173 0 0 0 1.003 1.773h13.686a1.173 1.173 0 0 0 1.003-1.773L8.982 1.562z"/></svg> 0
+                </span>
+                <span style="display: flex; align-items: center; gap: 3px;">
+                    <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><path d="M14.778.085A.5.5 0 0 1 15 .5V8a.5.5 0 0 1-.314.464L14.5 8.5l-.186-.036A.5.5 0 0 1 14 8V.5a.5.5 0 0 1 .778-.415z"/></svg> 0
+                </span>
+            </div>
+            <button id="queueClueBtn" class="status-btn" title="Staging">
+                <svg viewBox="0 0 16 16" fill="currentColor" width="14"><path d="M8 4.5l-4 4h3V12h2V8.5h3l-4-4zM2 14v-1h12v1H2z"/></svg>
+            </button>
+            <button id="sendClueBtn" class="status-btn" title="Push Live">
+                <svg viewBox="0 0 16 16" fill="currentColor" width="14"><path d="M11.5 8l-4-4v3H3v2h4.5v3l4-4zM14 2v12h-1V2h1z"/></svg>
+            </button>
+            <button id="endTurnBtn" class="status-btn" title="Next Turn">
+                <svg viewBox="0 0 16 16" fill="currentColor" width="14"><path d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2v1z"/><path d="M8 4.5l2-2.5-2-2.5v5z"/></svg>
+            </button>
+        </div>
+        <div style="display: flex; gap: 0; align-items: center; height: 100%;">
+            <span id="turnIndicator" style="padding: 0 10px;">...</span>
+            <span style="padding: 0 10px;">UTF-8</span>
+            <span style="padding: 0 10px;">JSON</span>
+            <div class="status-btn"><svg viewBox="0 0 16 16" fill="currentColor" width="14"><path d="M11.5 4a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm0 4a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm0 4a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/></svg></div>
+        </div>
     </div>
 
     <script>
@@ -205,7 +257,7 @@
             pendingClues.forEach((c, index) => {
                 const item = document.createElement('div');
                 item.className = 'tree-item pending-file';
-                item.innerHTML = `M <span class="clue-val">${c.text.toUpperCase()}</span> (${c.num})`;
+                item.innerHTML = `M <span style="color:#ce9178; font-weight:bold;">${c.text.toUpperCase()}</span> (${c.num})`;
                 item.onclick = () => {
                     document.getElementById('clueText').value = c.text;
                     document.getElementById('clueNum').value = c.num;
@@ -234,25 +286,6 @@
             }
         };
 
-        async function startNewGame() {
-            const { data: bank } = await mySupabase.from('word_bank').select('word');
-            const shuffled = bank.sort(() => 0.5 - Math.random()).slice(0, 25);
-            const roles = Array(25).fill(null).map(() => ({ a: 'neutral', b: 'neutral' }));
-            const idx = [...Array(25).keys()].sort(() => 0.5 - Math.random());
-            idx.slice(0, 3).forEach(i => { roles[i].a='green'; roles[i].b='green'; });
-            idx.slice(3, 9).forEach(i => roles[i].a='green');
-            idx.slice(9, 15).forEach(i => roles[i].b='green');
-            roles[idx[15]].a='black'; roles[idx[16]].b='black'; roles[idx[17]].a='black'; roles[idx[17]].b='black';
-            const boardData = shuffled.map((w, i) => ({ word: w.word, role_a_view: roles[i].a, role_b_view: roles[i].b, status_a: 'neutral', status_b: 'neutral' }));
-            await mySupabase.from('game_state').delete().neq('id', 0);
-            await mySupabase.from('game_state').insert(boardData);
-            await mySupabase.from('game_hints').delete().neq('id', 0);
-            await mySupabase.from('game_control').update({ current_turn: 'A' }).eq('id', 1);
-            location.reload();
-        }
-
-        document.getElementById('newGameBtn').onclick = startNewGame;
-        
         document.getElementById('sendClueBtn').onclick = async () => {
             const text = document.getElementById('clueText').value;
             const num = document.getElementById('clueNum').value;
@@ -273,26 +306,41 @@
             const { data: ctrl } = await mySupabase.from('game_control').select('current_turn').single();
             const { data: words } = await mySupabase.from('game_state').select('*').order('id', { ascending: true });
             const { data: hints } = await mySupabase.from('game_hints').select('*').order('created_at', { ascending: true });
-            if (!words || words.length === 0) { document.getElementById('newGameBtn').style.display = 'inline-block'; return; }
+            if (!words || words.length === 0) return;
+            
             const isGameOver = words.some(w => w.status_a === 'assassin' || w.status_b === 'assassin');
             const allFound = words.filter(w => w.status_a === 'agent' || w.status_b === 'agent').length >= 15;
             const isMyTurn = ctrl.current_turn === myRole;
-            document.getElementById('newGameBtn').style.display = (isGameOver || allFound) ? 'inline-block' : 'none';
-            document.getElementById('turnIndicator').innerText = isGameOver ? "FATAL_ERROR" : (allFound ? "SUCCESS" : `ROLE_${ctrl.current_turn}_ACTIVE`);
+            
+            document.getElementById('turnIndicator').innerText = isGameOver ? "ERR_CRITICAL" : (allFound ? "SUCCESS" : `LINE: ROLE_${ctrl.current_turn}_ACTIVE`);
             const board = document.getElementById('board');
             board.className = (isMyTurn && !isGameOver) ? "grid" : "grid not-your-turn";
             board.innerHTML = '';
+            
+            // GENERATION DYNAMIQUE DES NUMEROS DE LIGNE (Jusqu'à 100 pour assurer le scroll)
+            let lineTxt = "";
+            for(let i=1; i<=100; i++) lineTxt += i + "<br>";
+            document.getElementById('lineGutter').innerHTML = lineTxt;
+
             words.forEach((item, i) => {
                 const row = document.createElement('div');
                 row.className = 'word-row';
                 const idStr = (i + 1).toString().padStart(2, '0');
                 row.innerHTML = `<span class="key">"node_${idStr}"</span>: <span class="val">"${item.word}"</span>,`;
                 const statusMe = (myRole === 'A') ? item.status_a : item.status_b;
-                if(item.status_a === 'assassin' || item.status_b === 'assassin') row.classList.add('assassin');
-                else if(item.status_a === 'agent' || item.status_b === 'agent') row.classList.add('agent');
-                else if(statusMe === 'civil') row.classList.add('civil');
+                
+                if(item.status_a === 'assassin' || item.status_b === 'assassin') {
+                    row.style.color = '#f44747';
+                    row.style.fontWeight = 'bold';
+                } else if(item.status_a === 'agent' || item.status_b === 'agent') {
+                    row.style.color = 'var(--syntax-comment)';
+                    row.style.fontStyle = 'italic';
+                } else if(statusMe === 'civil') {
+                    row.style.opacity = '0.3';
+                }
+
                 const viewMe = (myRole === 'A') ? item.role_a_view : item.role_b_view;
-                if(!row.classList.contains('agent') && !row.classList.contains('assassin')){
+                if(!row.style.color && !row.style.opacity){
                     if(viewMe === 'green') row.classList.add('hint-green');
                     if(viewMe === 'black') row.classList.add('hint-black');
                 }
