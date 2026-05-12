@@ -143,7 +143,6 @@
                 <div class="tree-item"><span style="color:#ffffff">⌄</span> src</div>
                 <div class="tree-item active" style="padding-left:30px;"><span style="color:#cbcb41">{}</span> word_matrix.json</div>
                 <div class="tree-item" style="padding-left:30px;">📄 hardware.ts</div>
-                <div class="tree-item">📄 package.json</div>
             </div>
             <div class="sidebar-header">Source Control</div>
             <div class="file-tree staging-area" id="stagingArea"></div>
@@ -175,7 +174,7 @@
 
             <div class="terminal-panel">
                 <div class="terminal-tabs">
-                    <div class="terminal-tab">Problems</div><div class="terminal-tab">Output</div><div class="terminal-tab">Debug Console</div><div class="terminal-tab active">Terminal</div><div class="terminal-tab">Ports</div>
+                    <div class="terminal-tab">Problems</div><div class="terminal-tab">Output</div><div class="terminal-tab active">Terminal</div><div class="terminal-tab">Ports</div>
                     <div class="terminal-actions-right">
                         <button id="newGameBtn" class="status-btn" style="color:#6a9955; display:none; font-weight:bold;">RELOAD_GAME</button>
                         <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/></svg>
@@ -268,14 +267,14 @@
             const roles = Array(25).fill(null).map(() => ({ a: 'neutral', b: 'neutral' }));
             const idx = [...Array(25).keys()].sort(() => 0.5 - Math.random());
             
-            // 3 Verts communs (Indices 0, 1, 2)
+            // 3 Verts communs
             idx.slice(0, 3).forEach(i => { roles[i].a='green'; roles[i].b='green'; });
-            // 6 Verts pour A (Indices 3, 4, 5, 6, 7, 8). Total A = 3 + 6 = 9
+            // 6 Verts pour A (Total A = 3+6=9)
             idx.slice(3, 9).forEach(i => roles[i].a='green');
-            // 6 Verts pour B (Indices 9, 10, 11, 12, 13, 14). Total B = 3 + 6 = 9
+            // 6 Verts pour B (Total B = 3+6=9)
             idx.slice(9, 15).forEach(i => roles[i].b='green');
             
-            // Assassins Duel (Le reste)
+            // Assassins
             roles[idx[15]].a = 'black'; roles[idx[15]].b = 'black';
             roles[idx[16]].a = 'black'; roles[idx[16]].b = 'green';
             roles[idx[17]].a = 'black'; roles[idx[17]].b = 'neutral';
@@ -298,8 +297,6 @@
             if (!words || words.length === 0) { document.getElementById('newGameBtn').style.display = 'block'; return; }
 
             const isGameOver = words.some(w => w.status_a === 'assassin' || w.status_b === 'assassin');
-            
-            // Compteur de mots verts restant à trouver (départ à 15 cartes physiques)
             const physicalGreensFound = words.filter(w => w.status_a === 'agent' || w.status_b === 'agent').length;
             const greensRemaining = Math.max(0, 15 - physicalGreensFound);
             document.getElementById('greenCounter').innerText = greensRemaining;
@@ -308,7 +305,6 @@
             const iAmDone = myGreensFound >= 9;
             const allFound = (physicalGreensFound >= 15);
 
-            // Passage de tour automatique si j'ai trouvé mes 9 mots
             if (iAmDone && ctrl.current_turn === myRole && !allFound) {
                 await mySupabase.from('game_control').update({ current_turn: (myRole === 'A' ? 'B' : 'A') }).eq('id', 1);
             }
@@ -359,7 +355,6 @@
                     
                     if(res === 'agent') {
                         let updObj = {};
-                        // Si vert pour les deux, on incrémente les deux compteurs de 1 (soit 2 au total)
                         if(item.role_a_view === 'green' && item.role_b_view === 'green') {
                             updObj = { greens_found_a: ctrl.greens_found_a + 1, greens_found_b: ctrl.greens_found_b + 1 };
                         } else {
