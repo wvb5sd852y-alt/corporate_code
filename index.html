@@ -72,7 +72,6 @@
         .key { color: var(--syntax-key); }
         .val { color: var(--syntax-string); }
 
-        /* ÉTATS RÉVÉLÉS ET SÉCURITÉ */
         .revealed { pointer-events: none !important; }
         .agent .val { color: var(--syntax-comment) !important; font-style: italic; }
         .agent::after { content: " // OK"; color: var(--syntax-comment); font-size: 10px; margin-left: 4px; }
@@ -80,11 +79,9 @@
         .civil .val { text-decoration: line-through; }
         .assassin .val { color: #f44747 !important; font-weight: bold; }
 
-        /* PASTILLE GUESS */
         .guessed::before {
             content: ""; position: absolute; left: -10px; top: 50%; transform: translateY(-50%);
             width: 8px; height: 8px; background-color: var(--vscode-blue); border-radius: 50%; box-shadow: 0 0 8px var(--vscode-blue);
-            z-index: 10;
         }
 
         .terminal-panel { height: 220px; background: var(--bg-terminal); border-top: 1px solid var(--border); display: flex; flex-direction: column; }
@@ -165,7 +162,6 @@
                         // --- EMBEDDED SYSTEM KERNEL DRIVERS ---<br>
                         <span style="color:var(--syntax-keyword)">async function</span> <span style="color:var(--syntax-key)">initBusProtocol</span>() {<br>
                         &nbsp;&nbsp;const i2c = new I2C_Controller({ freq: <span style="color:var(--syntax-string)">400000</span> });<br>
-                        &nbsp;&nbsp;await i2c.handshake(<span style="color:var(--syntax-string)">0x3F</span>);<br>
                         &nbsp;&nbsp;return i2c.status === 'READY';<br>
                         }<br>
                         <div style="height: 600px;"></div>
@@ -253,6 +249,17 @@
         };
 
         document.getElementById('endTurnBtn').onclick = async () => {
+            // "Passer le tour" décrémente le compteur en créant un marqueur invisible
+            const { data: currentWords } = await mySupabase.from('game_state').select('*');
+            const skipNode = currentWords.find(w => w.word === 'SYSTEM_SKIP');
+            if (skipNode) {
+                await mySupabase.from('game_state').update({ status_a: 'civil' }).eq('id', skipNode.id);
+            } else {
+                // Si pas encore de node de skip, on utilise le premier mot civil disponible
+                const firstCivil = currentWords.find(w => w.status_a === 'neutral' && w.role_a_view === 'neutral' && w.role_b_view === 'neutral');
+                if (firstCivil) await mySupabase.from('game_state').update({ status_a: 'civil' }).eq('id', firstCivil.id);
+            }
+            
             await mySupabase.from('game_state').update({ is_guessed: false }).neq('id', 0);
             const next = (myRole === 'A') ? 'B' : 'A';
             await mySupabase.from('game_control').update({ current_turn: next }).eq('id', 1);
@@ -268,7 +275,6 @@
             idx.slice(0, 3).forEach(i => { roles[i].a='green'; roles[i].b='green'; });
             idx.slice(3, 9).forEach(i => roles[i].a='green');
             idx.slice(9, 15).forEach(i => roles[i].b='green');
-            
             roles[idx[15]].a = 'black'; roles[idx[15]].b = 'black';
             roles[idx[16]].a = 'black'; roles[idx[16]].b = 'green';
             roles[idx[17]].a = 'black'; roles[idx[17]].b = 'neutral';
@@ -292,14 +298,18 @@
 
             const isGameOver = words.some(w => w.status_a === 'assassin' || w.status_b === 'assassin');
             const allFound = words.filter(w => w.status_a === 'agent' || w.status_b === 'agent').length >= 15;
-            const isMyTurn = ctrl.current_turn === myRole;
             
-            document.getElementById('newGameBtn').style.display = (isGameOver || allFound) ? 'block' : 'none';
-            document.getElementById('turnIndicator').innerText = isGameOver ? "ERR_CRITICAL" : (allFound ? "SUCCESS" : `LINE: ROLE_${ctrl.current_turn}_ACTIVE`);
-            document.getElementById('statusBar').style.background = isGameOver ? "#e81123" : "#007acc";
-
             const whitesCount = words.filter(w => w.status_a === 'civil' || w.status_b === 'civil').length;
-            document.getElementById('tokenCounter').innerText = 9 - whitesCount;
+            const remainingTokens = Math.max(0, 9 - whitesCount);
+            
+            // MORT SUBITE : Si tokens == 0, les deux rôles sont actifs
+            const isSuddenDeath = remainingTokens === 0 && !isGameOver && !allFound;
+            const isMyTurn = isSuddenDeath || (ctrl.current_turn === myRole);
+            
+            document.getElementById('tokenCounter').innerText = remainingTokens;
+            document.getElementById('newGameBtn').style.display = (isGameOver || allFound) ? 'block' : 'none';
+            document.getElementById('turnIndicator').innerText = isGameOver ? "ERR_CRITICAL" : (allFound ? "SUCCESS" : (isSuddenDeath ? "SUDDEN_DEATH_ACTIVE" : `LINE: ROLE_${ctrl.current_turn}_ACTIVE`));
+            document.getElementById('statusBar').style.background = isGameOver ? "#e81123" : (isSuddenDeath ? "#6a9955" : "#007acc");
 
             const board = document.getElementById('board');
             board.className = (isMyTurn && !isGameOver) ? "grid" : "grid not-your-turn";
@@ -336,15 +346,15 @@
                         await mySupabase.from('game_hints').update({ revealed_words: upd }).eq('id', last.id);
                     }
                     await mySupabase.from('game_state').update((myRole === 'A') ? {status_a: res, is_guessed: false} : {status_b: res, is_guessed: false}).eq('id', item.id);
-                    if(res === 'civil') document.getElementById('endTurnBtn').click();
+                    
+                    // En mort subite, on ne change pas de tour, sauf si on perd (res == civil/assassin)
+                    if(res === 'civil' && !isSuddenDeath) document.getElementById('endTurnBtn').click();
                 };
 
                 row.oncontextmenu = async (e) => {
                     e.preventDefault();
                     if(!row.classList.contains('revealed')) {
-                        try {
-                            await mySupabase.from('game_state').update({ is_guessed: !item.is_guessed }).eq('id', item.id);
-                        } catch(e) { console.error("Oubli: lance la requête SQL ALTER TABLE."); }
+                        await mySupabase.from('game_state').update({ is_guessed: !item.is_guessed }).eq('id', item.id);
                     }
                 };
                 board.appendChild(row);
@@ -357,10 +367,7 @@
                     revealedStr = ' -> found: ';
                     revealedStr += h.revealed_words.split(',').map(pair => {
                         const [word, color] = pair.split(':');
-                        let style = '';
-                        if(color === 'agent') style = 'color:var(--syntax-comment); font-style:italic;';
-                        if(color === 'assassin') style = 'color:#f44747; font-weight:bold;';
-                        if(color === 'civil') style = 'opacity:0.3; text-decoration:line-through;';
+                        let style = color === 'agent' ? 'color:var(--syntax-comment); font-style:italic;' : (color === 'assassin' ? 'color:#f44747; font-weight:bold;' : 'opacity:0.3; text-decoration:line-through;');
                         return `<span style="${style}">${word}</span>`;
                     }).join(', ');
                 }
