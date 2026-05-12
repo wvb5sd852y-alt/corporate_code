@@ -163,6 +163,7 @@
                         // --- EMBEDDED SYSTEM KERNEL DRIVERS ---<br>
                         <span style="color:var(--syntax-keyword)">async function</span> <span style="color:var(--syntax-key)">initBusProtocol</span>() {<br>
                         &nbsp;&nbsp;const i2c = new I2C_Controller({ freq: <span style="color:var(--syntax-string)">400000</span> });<br>
+                        &nbsp;&nbsp;await i2c.handshake(<span style="color:var(--syntax-string)">0x3F</span>);<br>
                         &nbsp;&nbsp;return i2c.status === 'READY';<br>
                         }<br>
                         <div style="height: 600px;"></div>
@@ -172,7 +173,7 @@
 
             <div class="terminal-panel">
                 <div class="terminal-tabs">
-                    <div class="terminal-tab">Problems</div><div class="terminal-tab">Output</div><div class="terminal-tab">Debug Console</div><div class="terminal-tab active">Terminal</div><div class="terminal-tab">Ports</div>
+                    <div class="terminal-tab">Problems</div><div class="terminal-tab">Output</div><div class="terminal-tab active">Terminal</div><div class="terminal-tab">Ports</div>
                     <div class="terminal-actions-right">
                         <button id="newGameBtn" class="status-btn" style="color:#6a9955; display:none; font-weight:bold;">RELOAD_GAME</button>
                         <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/></svg>
@@ -263,7 +264,6 @@
             const shuffled = bank.sort(() => 0.5 - Math.random()).slice(0, 25);
             const roles = Array(25).fill(null).map(() => ({ a: 'neutral', b: 'neutral' }));
             const idx = [...Array(25).keys()].sort(() => 0.5 - Math.random());
-            
             idx.slice(0, 3).forEach(i => { roles[i].a='green'; roles[i].b='green'; });
             idx.slice(3, 9).forEach(i => roles[i].a='green');
             idx.slice(9, 15).forEach(i => roles[i].b='green');
@@ -272,12 +272,11 @@
             roles[idx[17]].a = 'black'; roles[idx[17]].b = 'neutral';
             roles[idx[18]].b = 'black'; roles[idx[18]].a = 'green';
             roles[idx[19]].b = 'black'; roles[idx[19]].a = 'neutral';
-
             const boardData = shuffled.map((w, i) => ({ word: w.word, role_a_view: roles[i].a, role_b_view: roles[i].b, status_a: 'neutral', status_b: 'neutral', is_guessed: false }));
             await mySupabase.from('game_state').delete().neq('id', 0);
             await mySupabase.from('game_state').insert(boardData);
             await mySupabase.from('game_hints').delete().neq('id', 0);
-            await mySupabase.from('game_control').update({ current_turn: 'A', tokens_left: 9 }).eq('id', 1);
+            await mySupabase.from('game_control').update({ current_turn: 'A', tokens_left: 9, greens_found_a: 0, greens_found_b: 0 }).eq('id', 1);
             location.reload();
         }
         document.getElementById('newGameBtn').onclick = startNewGame;
@@ -289,14 +288,17 @@
             if (!words || words.length === 0) { document.getElementById('newGameBtn').style.display = 'block'; return; }
 
             const isGameOver = words.some(w => w.status_a === 'assassin' || w.status_b === 'assassin');
-            const foundGreens = words.filter(w => (w.role_a_view === 'green' && w.status_a === 'agent') || (w.role_b_view === 'green' && w.status_b === 'agent')).length;
-            const allFound = foundGreens >= 15;
-            document.getElementById('greenCounter').innerText = `${foundGreens}/15`;
+            
+            // Calcul synchronisé via game_control
+            const totalGreens = ctrl.greens_found_a + ctrl.greens_found_b;
+            const allFound = totalGreens >= 15;
+            document.getElementById('greenCounter').innerText = `${totalGreens}/15`;
 
-            const myTargetView = (myRole === 'A') ? 'role_b_view' : 'role_a_view';
-            const myFoundCount = words.filter(w => w[myTargetView] === 'green' && (w.status_a === 'agent' || w.status_b === 'agent')).length;
-            const iAmDone = myFoundCount >= 9;
+            // Vérification du rôle fini (9 mots chacun)
+            const myGreensFound = (myRole === 'A') ? ctrl.greens_found_a : ctrl.greens_found_b;
+            const iAmDone = myGreensFound >= 9;
 
+            // Passage de tour AUTO si mon rôle est fini
             if (iAmDone && ctrl.current_turn === myRole && !allFound) {
                 await mySupabase.from('game_control').update({ current_turn: (myRole === 'A' ? 'B' : 'A') }).eq('id', 1);
             }
@@ -322,9 +324,7 @@
                 row.className = 'word-row';
                 if(item.is_guessed) row.classList.add('guessed');
                 
-                const statusA = item.status_a;
-                const statusB = item.status_b;
-                
+                const statusA = item.status_a; const statusB = item.status_b;
                 if(statusA !== 'neutral' || statusB !== 'neutral') row.classList.add('revealed');
                 if(statusA === 'agent' || statusB === 'agent') row.classList.add('agent');
                 else if(statusA === 'assassin' || statusB === 'assassin') row.classList.add('assassin');
@@ -346,6 +346,13 @@
                         const upd = last.revealed_words ? (last.revealed_words + ',' + item.word + ':' + res) : (item.word + ':' + res);
                         await mySupabase.from('game_hints').update({ revealed_words: upd }).eq('id', last.id);
                     }
+                    
+                    // Si c'est un agent, on incrémente le score DU JOUEUR QUI CLIQUE (car il trouve les mots de l'autre)
+                    if(res === 'agent') {
+                        const col = (myRole === 'A') ? 'greens_found_a' : 'greens_found_b';
+                        await mySupabase.from('game_control').update({ [col]: ctrl[col] + 1 }).eq('id', 1);
+                    }
+
                     await mySupabase.from('game_state').update((myRole === 'A') ? {status_a: res, is_guessed: false} : {status_b: res, is_guessed: false}).eq('id', item.id);
                     if(res === 'civil' && !isSuddenDeath) document.getElementById('endTurnBtn').click();
                 };
@@ -366,7 +373,7 @@
                     revealedStr = ' -> found: ';
                     revealedStr += h.revealed_words.split(',').map(pair => {
                         const [word, color] = pair.split(':');
-                        let style = color === 'agent' ? 'color:#4ade80; font-style:italic;' : (color === 'assassin' ? 'color:#f44747; font-weight:bold;' : 'opacity:0.3; text-decoration:line-through;');
+                        let style = color === 'agent' ? 'color:#4ade80; font-style:italic;' : (color === 'assassin' ? 'color:#f87171; font-weight:bold;' : 'opacity:0.3; text-decoration:line-through;');
                         return `<span style="${style}">${word}</span>`;
                     }).join(', ');
                 }
