@@ -25,7 +25,7 @@
         body { background: var(--bg-darker); color: var(--text-main); font-family: 'Segoe UI', sans-serif; margin: 0; display: flex; flex-direction: column; height: 100vh; font-size: 13px; overflow: hidden; }
 
         .top-menu { background: var(--bg-darker); height: 35px; display: flex; align-items: center; padding: 0; flex-shrink: 0; }
-        .menu-items { display: flex; gap: 12px; padding: 0 10px; font-size: 12px; color: #bbb; }
+        .menu-items { display: flex; gap: 12px; padding: 0 10px; font-size: 12px; color: #bbb; align-items: center; }
         .menu-items span:hover { color: #fff; cursor: default; }
         
         .search-container { flex-grow: 1; display: flex; align-items: center; justify-content: center; gap: 10px; }
@@ -53,7 +53,6 @@
         .tree-item { display: flex; align-items: center; padding: 4px 15px; cursor: pointer; gap: 6px; white-space: nowrap; font-size: 12px; }
         .tree-item:hover { background: #2a2d2e; }
         .tree-item.active { background: #37373d; color: #fff; }
-        
         .staging-area { border-top: 1px solid #333; padding-top: 5px; background: rgba(0,0,0,0.1); max-height: 40%; overflow-y: auto; }
 
         .main-content { flex-grow: 1; display: flex; flex-direction: column; background: var(--bg-main); overflow: hidden; }
@@ -63,7 +62,6 @@
         .tab svg { width: 14px; height: 14px; }
         .tab-close { margin-left: 5px; opacity: 0.7; font-size: 14px; cursor: pointer; }
 
-        /* AJOUT NUMEROS DE LIGNES ET WRAPPER SCROLL */
         .editor-view { display: flex; flex-grow: 1; overflow-y: auto; font-family: 'Consolas', monospace; line-height: 1.5; padding-top: 10px; }
         .line-numbers { width: 45px; text-align: right; padding-right: 15px; color: var(--line-number); user-select: none; flex-shrink: 0; border-right: 1px solid transparent; }
         .code-area { flex-grow: 1; padding-left: 10px; }
@@ -74,12 +72,21 @@
         .key { color: var(--syntax-key); }
         .val { color: var(--syntax-string); }
 
+        /* CLASSES DE JEU */
+        .agent .val { color: var(--syntax-comment) !important; font-style: italic; }
+        .agent::after { content: " // OK_SYNC"; color: var(--syntax-comment); font-size: 11px; }
+        .civil { opacity: 0.3; }
+        .civil .val { text-decoration: line-through; }
+        .assassin .val { color: #f44747 !important; font-weight: bold; }
+        .assassin::after { content: " // FATAL_ERROR"; color: #f44747; font-size: 11px; }
+
         .terminal-panel { height: 220px; background: var(--bg-terminal); border-top: 1px solid var(--border); display: flex; flex-direction: column; }
         .terminal-tabs { background: var(--bg-main); display: flex; padding: 0 20px; height: 35px; align-items: center; border-bottom: 1px solid #2d2d2d; font-size: 11px; color: #858585; }
         .terminal-tab { cursor: pointer; text-transform: uppercase; padding: 8px 0; margin-right: 20px; }
         .terminal-tab.active { color: #fff; border-bottom: 1px solid var(--vscode-blue); }
         .terminal-actions-right { margin-left: auto; display: flex; gap: 15px; align-items: center; }
-        .terminal-actions-right svg { width: 14px; height: 14px; color: #858585; }
+        .terminal-actions-right svg { width: 14px; height: 14px; color: #858585; cursor: pointer; }
+        .terminal-actions-right svg:hover { color: #fff; }
         
         .terminal-content { flex-grow: 1; padding: 12px 20px; overflow-y: auto; font-family: 'Consolas', monospace; font-size: 12px; color: #cccccc; }
         .term-prompt { color: #6a9955; font-weight: bold; }
@@ -87,7 +94,6 @@
         .status-bar { background: var(--vscode-blue); color: white; padding: 0 12px; font-size: 11px; height: 22px; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; width: 100%; box-sizing: border-box; }
         .status-btn { background: transparent; border: none; color: white; font-size: 11px; padding: 0 10px; cursor: pointer; height: 100%; display: flex; align-items: center; gap: 5px; }
         .status-btn:hover { background: rgba(255,255,255,0.1); }
-        .status-btn svg { width: 14px; height: 14px; }
 
         .hint-green { border-left: 2px solid #3e5a30; }
         .hint-black { border-left: 2px solid #4a1c1c; }
@@ -98,6 +104,7 @@
 
     <div class="top-menu">
         <div class="menu-items">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/9/9a/Visual_Studio_Code_1.35_icon.svg" width="16" style="margin-right: 8px;">
             <span>File</span> <span>Edit</span> <span>Selection</span> <span>View</span> <span>Go</span> <span>Run</span> <span>Terminal</span> <span>Help</span>
         </div>
         <div class="search-container">
@@ -116,17 +123,24 @@
 
     <div class="layout-middle">
         <div class="activity-bar">
+            <!-- Explorer -->
             <div class="act-icon active"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg></div>
+            <!-- Source Control -->
             <div class="act-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.1 12.5a2.1 2.1 0 0 0-2-1.5c-1 0-1.8.7-2 1.6l-5.1-3.1c.1-.3.1-.7.1-1a2.1 2.1 0 1 0-4.2 0c0 .4 0 .7.2 1l5 3.1c-.1.3-.1.7-.1 1a2.1 2.1 0 1 0 4.2 0c0-.4 0-.7-.2-1l5.1-3.1c.1.3.1.7.1 1a2.1 2.1 0 1 0 4.2 0c0-.4 0-.7-.2-1l-5.2-3.1z"/></svg></div>
+            <!-- Debug -->
             <div class="act-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 7h-2.1c-.2-.5-.5-.9-.8-1.3l1.4-1.4-1.4-1.4-2.2 2.2c-.6-.4-1.2-.7-1.9-.9V2h-2v2.2c-.7.2-1.3.5-1.9.9L5.9 2.9 4.5 4.3l1.4 1.4c-.3.4-.6.8-.8 1.3H3v2h2.1c0 .3-.1.7-.1 1H3v2h2.1c0 .3.1.7.1 1H3v2h2.1c.2.5.5.9.8 1.3l-1.4 1.4 1.4 1.4 2.2-2.2c.6.4 1.2.7 1.9.9V22h2v-2.2c.7-.2 1.3-.5 1.9-.9l2.2 2.2 1.4-1.4-1.4-1.4c.3-.4.6-.8.8-1.3H19v-2h-2.1c0-.3.1-.7.1-1H19v-2h-2.1c0-.3-.1-.7-.1-1H19V7zm-6 8h-2v-2h2v2zm0-4h-2V9h2v2z"/></svg></div>
+            <!-- Remote Explorer -->
             <div class="act-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 13H5v-2h14v2zM5 15h14v2H5v-2zM5 9h14V7H5v2zM21 3H3a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h18a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2z"/></svg></div>
+            <!-- Extensions -->
             <div class="act-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.5 11H19V7h-4V5.5a2.5 2.5 0 0 0-5 0V7H6v4H4.5a2.5 2.5 0 0 0 0 5H6v4h4v-1.5a2.5 2.5 0 0 1 5 0V20h4v-4h1.5a2.5 2.5 0 0 0 0-5z"/></svg></div>
+            <!-- Profile -->
             <div class="act-icon" style="margin-top: auto;"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg></div>
+            <!-- Settings -->
             <div class="act-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M19.14 12.94c.04-.3.06-.61.06-.94s-.02-.64-.06-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.04.3-.06.61-.06.94s.02.64.06.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg></div>
         </div>
 
         <div class="sidebar">
-            <div class="sidebar-header"> Explorer <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M3 9.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z"/></svg></div>
+            <div class="sidebar-header">Explorer <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M3 9.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z"/></svg></div>
             <div class="file-tree" id="fileTree">
                 <div class="tree-item"><span style="color:#ffffff">⌄</span> src</div>
                 <div class="tree-item active" style="padding-left:30px;"><span style="color:#cbcb41">{}</span> word_matrix.json</div>
@@ -134,17 +148,13 @@
                 <div class="tree-item">📄 package.json</div>
             </div>
             <div class="sidebar-header">Source Control</div>
-            <div class="file-tree staging-area" id="stagingArea">
-                <div style="padding: 10px; color: #666; font-style: italic;">No staged changes...</div>
-            </div>
+            <div class="file-tree staging-area" id="stagingArea"></div>
         </div>
 
         <div class="main-content">
             <div class="tabs">
                 <div class="tab">hardware.ts</div>
-                <div class="tab active">
-                    <span style="color:#cbcb41; margin-right:5px;">{}</span> word_matrix.json <span class="tab-close">×</span>
-                </div>
+                <div class="tab active"><span style="color:#cbcb41; margin-right:5px;">{}</span> word_matrix.json <span class="tab-close">×</span></div>
             </div>
 
             <div class="editor-view">
@@ -153,7 +163,7 @@
                     <div><span class="syntax-keyword" style="color:var(--syntax-keyword)">export const</span> <span class="key">nodes</span> = <span style="color:#ffd700">[</span></div>
                     <div class="grid" id="board">... SYNCING ...</div>
                     <div><span style="color:#ffd700">]</span>;</div>
-                    <!-- AJOUT DE CODE TECHNIQUE POUR LE SCROLL -->
+                    <!-- CODE GEII POUR LE SCROLL -->
                     <div style="color:var(--syntax-comment); margin-top:20px;">
                         // --- EMBEDDED SYSTEM KERNEL DRIVERS ---<br>
                         <span style="color:var(--syntax-keyword)">async function</span> <span style="color:var(--syntax-key)">initBusProtocol</span>() {<br>
@@ -172,20 +182,17 @@
                         &nbsp;&nbsp;&nbsp;&nbsp;buffer: new Uint8Array(<span style="color:var(--syntax-string)">1024</span>),<br>
                         &nbsp;&nbsp;&nbsp;&nbsp;flags: [<span style="color:var(--syntax-string)">"INT_EN"</span>, <span style="color:var(--syntax-string)">"DMA_BURST"</span>]<br>
                         };<br><br>
-                        // EOF Matrix Definitions
-                        <div style="height: 500px;"></div>
+                        // EOF
+                        <div style="height: 600px;"></div>
                     </div>
                 </div>
             </div>
 
             <div class="terminal-panel">
                 <div class="terminal-tabs">
-                    <div class="terminal-tab">Problems</div>
-                    <div class="terminal-tab">Output</div>
-                    <div class="terminal-tab">Debug Console</div>
-                    <div class="terminal-tab active">Terminal</div>
-                    <div class="terminal-tab">Ports</div>
+                    <div class="terminal-tab">Problems</div><div class="terminal-tab">Output</div><div class="terminal-tab">Debug Console</div><div class="terminal-tab active">Terminal</div><div class="terminal-tab">Ports</div>
                     <div class="terminal-actions-right">
+                        <button id="newGameBtn" class="status-btn" style="color:#6a9955; display:none; font-weight:bold;">RELOAD_GAME</button>
                         <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/></svg>
                         <svg viewBox="0 0 16 16" fill="currentColor"><path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/></svg>
                         <svg viewBox="0 0 16 16" fill="currentColor"><path d="M3 9.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z"/></svg>
@@ -194,12 +201,10 @@
                     </div>
                 </div>
                 <div class="terminal-content">
-                    <div id="clueHistory" style="overflow-y: auto; flex-grow: 1;"></div>
+                    <div id="clueHistory" style="overflow-y: auto;"></div>
                     <div style="display:flex; gap:12px; align-items:center; margin-top:10px; border-top: 1px solid #333; padding-top: 8px;">
                         <span class="term-prompt">antoine@toulouse:~$</span>
-                        <span>clue --prep</span>
                         <input type="text" id="clueText" style="background:transparent; border:none; color:var(--syntax-string); outline:none; width:130px; font-family:inherit;" placeholder='"string"'>
-                        <span>-n</span>
                         <input type="number" id="clueNum" style="background:transparent; border:none; color:var(--syntax-string); width:30px; font-family:inherit;" value="1">
                     </div>
                 </div>
@@ -209,33 +214,19 @@
 
     <div class="status-bar" id="statusBar">
         <div style="display: flex; align-items: center; height: 100%;">
-            <div class="status-btn">
-                <svg viewBox="0 0 16 16" fill="currentColor" width="14"><path d="M8 2a6 6 0 1 0 0 12A6 6 0 0 0 8 2zM1 8a7 7 0 1 1 14 0A7 7 0 0 1 1 8z"/><path d="M7 10h2v1H7v-1zm0-6h2v5H7V4z"/></svg>
-                <span>Remote: master*</span>
-            </div>
+            <div class="status-btn"><svg viewBox="0 0 16 16" fill="currentColor" width="14"><path d="M8 2a6 6 0 1 0 0 12A6 6 0 0 0 8 2zM1 8a7 7 0 1 1 14 0A7 7 0 0 1 1 8z"/><path d="M7 10h2v1H7v-1zm0-6h2v5H7V4z"/></svg><span>master*</span></div>
             <div style="display: flex; align-items: center; gap: 8px; margin: 0 10px; opacity: 0.8;">
-                <span style="display: flex; align-items: center; gap: 3px;">
-                    <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><path d="M7.938 2.016A.13.13 0 0 1 8.002 2a.13.13 0 0 1 .063.016.146.13 0 0 1 .054.057l6.857 11.667c.036.06.035.124.002.183a.163.163 0 0 1-.054.06.116.116 0 0 1-.066.017H1.146a.115.116 0 0 1-.066-.017.163.163 0 0 1-.054-.06.176.176 0 0 1 .002-.183L7.884 2.073a.147.147 0 0 1 .054-.057zm1.044-.454a1.15 1.15 0 0 0-1.964 0L.154 13.227a1.173 1.173 0 0 0 1.003 1.773h13.686a1.173 1.173 0 0 0 1.003-1.773L8.982 1.562z"/></svg> 0
-                </span>
-                <span style="display: flex; align-items: center; gap: 3px;">
-                    <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><path d="M14.778.085A.5.5 0 0 1 15 .5V8a.5.5 0 0 1-.314.464L14.5 8.5l-.186-.036A.5.5 0 0 1 14 8V.5a.5.5 0 0 1 .778-.415z"/></svg> 0
-                </span>
+                <span><svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><path d="M7.938 2.016A.13.13 0 0 1 8.002 2a.13.13 0 0 1 .063.016.146.13 0 0 1 .054.057l6.857 11.667c.036.06.035.124.002.183a.163.163 0 0 1-.054.06.116.116 0 0 1-.066.017H1.146a.115.116 0 0 1-.066-.017.163.163 0 0 1-.054-.06.176.176 0 0 1 .002-.183L7.884 2.073a.147.147 0 0 1 .054-.057zm1.044-.454a1.15 1.15 0 0 0-1.964 0L.154 13.227a1.173 1.173 0 0 0 1.003 1.773h13.686a1.173 1.173 0 0 0 1.003-1.773L8.982 1.562z"/></svg> 0</span>
+                <span><svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><path d="M14.778.085A.5.5 0 0 1 15 .5V8a.5.5 0 0 1-.314.464L14.5 8.5l-.186-.036A.5.5 0 0 1 14 8V.5a.5.5 0 0 1 .778-.415zM14.5 12a1 1 0 1 1 0-2 1 1 0 0 1 0 2zM.5 15a.5.5 0 0 1-.464-.314l-.036-.186A.5.5 0 0 1 0 14V.5a.5.5 0 0 1 .5-.5h7.5a.5.5 0 0 1 .464.314l.036.186A.5.5 0 0 1 8 1v13.5a.5.5 0 0 1-.5.5H.5z"/></svg> 0</span>
             </div>
-            <button id="queueClueBtn" class="status-btn" title="Staging">
-                <svg viewBox="0 0 16 16" fill="currentColor" width="14"><path d="M8 4.5l-4 4h3V12h2V8.5h3l-4-4zM2 14v-1h12v1H2z"/></svg>
-            </button>
-            <button id="sendClueBtn" class="status-btn" title="Push Live">
-                <svg viewBox="0 0 16 16" fill="currentColor" width="14"><path d="M11.5 8l-4-4v3H3v2h4.5v3l4-4zM14 2v12h-1V2h1z"/></svg>
-            </button>
-            <button id="endTurnBtn" class="status-btn" title="Next Turn">
-                <svg viewBox="0 0 16 16" fill="currentColor" width="14"><path d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2v1z"/><path d="M8 4.5l2-2.5-2-2.5v5z"/></svg>
-            </button>
+            <button id="queueClueBtn" class="status-btn"><svg viewBox="0 0 16 16" fill="currentColor" width="14"><path d="M8 4.5l-4 4h3V12h2V8.5h3l-4-4zM2 14v-1h12v1H2z"/></svg></button>
+            <button id="sendClueBtn" class="status-btn"><svg viewBox="0 0 16 16" fill="currentColor" width="14"><path d="M11.5 8l-4-4v3H3v2h4.5v3l4-4zM14 2v12h-1V2h1z"/></svg></button>
+            <button id="endTurnBtn" class="status-btn"><svg viewBox="0 0 16 16" fill="currentColor" width="14"><path d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2v1z"/><path d="M8 4.5l2-2.5-2-2.5v5z"/></svg></button>
         </div>
         <div style="display: flex; gap: 0; align-items: center; height: 100%;">
             <span id="turnIndicator" style="padding: 0 10px;">...</span>
             <span style="padding: 0 10px;">UTF-8</span>
             <span style="padding: 0 10px;">JSON</span>
-            <div class="status-btn"><svg viewBox="0 0 16 16" fill="currentColor" width="14"><path d="M11.5 4a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm0 4a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm0 4a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/></svg></div>
         </div>
     </div>
 
@@ -244,46 +235,25 @@
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ0dnhtbHhkb3ZiZ2N4ZGF5enZuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg0NzgwNDcsImV4cCI6MjA5NDA1NDA0N30.IOHBBGzED0FV1xRYKOMsJapjACpeX2JVEhfNgXXT4B8'; 
         const mySupabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
         const myRole = (new URLSearchParams(window.location.search).get('role') || 'A').toUpperCase();
-
         let pendingClues = JSON.parse(localStorage.getItem('pending_clues') || '[]');
 
         function updateSidebar() {
-            const staging = document.getElementById('stagingArea');
-            staging.innerHTML = '';
-            if (pendingClues.length === 0) {
-                staging.innerHTML = '<div style="padding: 10px; color: #666; font-style: italic;">No staged changes...</div>';
-                return;
-            }
+            const staging = document.getElementById('stagingArea'); staging.innerHTML = '';
             pendingClues.forEach((c, index) => {
                 const item = document.createElement('div');
-                item.className = 'tree-item pending-file';
-                item.innerHTML = `M <span style="color:#ce9178; font-weight:bold;">${c.text.toUpperCase()}</span> (${c.num})`;
-                item.onclick = () => {
-                    document.getElementById('clueText').value = c.text;
-                    document.getElementById('clueNum').value = c.num;
-                };
-                item.oncontextmenu = (e) => {
-                    e.preventDefault();
-                    pendingClues.splice(index, 1);
-                    savePending();
-                };
+                item.className = 'tree-item';
+                item.innerHTML = `M <span style="color:#ce9178; font-weight:bold; margin-left:5px;">${c.text.toUpperCase()}</span> (${c.num})`;
+                item.onclick = () => { document.getElementById('clueText').value = c.text; document.getElementById('clueNum').value = c.num; };
+                item.oncontextmenu = (e) => { e.preventDefault(); pendingClues.splice(index, 1); savePending(); };
                 staging.appendChild(item);
             });
         }
-
-        function savePending() {
-            localStorage.setItem('pending_clues', JSON.stringify(pendingClues));
-            updateSidebar();
-        }
+        function savePending() { localStorage.setItem('pending_clues', JSON.stringify(pendingClues)); updateSidebar(); }
 
         document.getElementById('queueClueBtn').onclick = () => {
             const text = document.getElementById('clueText').value;
             const num = document.getElementById('clueNum').value;
-            if(text) {
-                pendingClues.push({ text, num });
-                savePending();
-                document.getElementById('clueText').value = '';
-            }
+            if(text) { pendingClues.push({ text, num }); savePending(); document.getElementById('clueText').value = ''; }
         };
 
         document.getElementById('sendClueBtn').onclick = async () => {
@@ -291,7 +261,7 @@
             const num = document.getElementById('clueNum').value;
             if(text) {
                 await mySupabase.from('game_hints').insert([{ clue_text: text, clue_number: num, sent_by: myRole }]);
-                const pIndex = pendingClues.findIndex(c => c.text === text && c.num == num);
+                const pIndex = pendingClues.findIndex(c => c.text === text);
                 if(pIndex !== -1) { pendingClues.splice(pIndex, 1); savePending(); }
                 document.getElementById('clueText').value = '';
             }
@@ -302,24 +272,43 @@
             await mySupabase.from('game_control').update({ current_turn: next }).eq('id', 1);
         };
 
+        async function startNewGame() {
+            const { data: bank } = await mySupabase.from('word_bank').select('word');
+            const shuffled = bank.sort(() => 0.5 - Math.random()).slice(0, 25);
+            const roles = Array(25).fill(null).map(() => ({ a: 'neutral', b: 'neutral' }));
+            const idx = [...Array(25).keys()].sort(() => 0.5 - Math.random());
+            idx.slice(0, 3).forEach(i => { roles[i].a='green'; roles[i].b='green'; });
+            idx.slice(3, 9).forEach(i => roles[i].a='green');
+            idx.slice(9, 15).forEach(i => roles[i].b='green');
+            roles[idx[15]].a='black'; roles[idx[16]].b='black'; roles[idx[17]].a='black'; roles[idx[17]].b='black';
+            const boardData = shuffled.map((w, i) => ({ word: w.word, role_a_view: roles[i].a, role_b_view: roles[i].b, status_a: 'neutral', status_b: 'neutral' }));
+            await mySupabase.from('game_state').delete().neq('id', 0);
+            await mySupabase.from('game_state').insert(boardData);
+            await mySupabase.from('game_hints').delete().neq('id', 0);
+            await mySupabase.from('game_control').update({ current_turn: 'A' }).eq('id', 1);
+            location.reload();
+        }
+        document.getElementById('newGameBtn').onclick = startNewGame;
+
         async function loadGame() {
             const { data: ctrl } = await mySupabase.from('game_control').select('current_turn').single();
             const { data: words } = await mySupabase.from('game_state').select('*').order('id', { ascending: true });
             const { data: hints } = await mySupabase.from('game_hints').select('*').order('created_at', { ascending: true });
-            if (!words || words.length === 0) return;
+            if (!words || words.length === 0) { document.getElementById('newGameBtn').style.display = 'block'; return; }
             
             const isGameOver = words.some(w => w.status_a === 'assassin' || w.status_b === 'assassin');
             const allFound = words.filter(w => w.status_a === 'agent' || w.status_b === 'agent').length >= 15;
             const isMyTurn = ctrl.current_turn === myRole;
             
+            document.getElementById('newGameBtn').style.display = (isGameOver || allFound) ? 'block' : 'none';
             document.getElementById('turnIndicator').innerText = isGameOver ? "ERR_CRITICAL" : (allFound ? "SUCCESS" : `LINE: ROLE_${ctrl.current_turn}_ACTIVE`);
+            document.getElementById('statusBar').style.background = isGameOver ? "#e81123" : "#007acc";
+
             const board = document.getElementById('board');
             board.className = (isMyTurn && !isGameOver) ? "grid" : "grid not-your-turn";
             board.innerHTML = '';
             
-            // GENERATION DYNAMIQUE DES NUMEROS DE LIGNE (Jusqu'à 100 pour assurer le scroll)
-            let lineTxt = "";
-            for(let i=1; i<=100; i++) lineTxt += i + "<br>";
+            let lineTxt = ""; for(let i=1; i<=100; i++) lineTxt += i + "<br>";
             document.getElementById('lineGutter').innerHTML = lineTxt;
 
             words.forEach((item, i) => {
@@ -327,46 +316,31 @@
                 row.className = 'word-row';
                 const idStr = (i + 1).toString().padStart(2, '0');
                 row.innerHTML = `<span class="key">"node_${idStr}"</span>: <span class="val">"${item.word}"</span>,`;
-                const statusMe = (myRole === 'A') ? item.status_a : item.status_b;
                 
-                if(item.status_a === 'assassin' || item.status_b === 'assassin') {
-                    row.style.color = '#f44747';
-                    row.style.fontWeight = 'bold';
-                } else if(item.status_a === 'agent' || item.status_b === 'agent') {
-                    row.style.color = 'var(--syntax-comment)';
-                    row.style.fontStyle = 'italic';
-                } else if(statusMe === 'civil') {
-                    row.style.opacity = '0.3';
-                }
+                const statusMe = (myRole === 'A') ? item.status_a : item.status_b;
+                if(item.status_a === 'assassin' || item.status_b === 'assassin') row.classList.add('assassin');
+                else if(item.status_a === 'agent' || item.status_b === 'agent') row.classList.add('agent');
+                else if(statusMe === 'civil') row.classList.add('civil');
 
                 const viewMe = (myRole === 'A') ? item.role_a_view : item.role_b_view;
-                if(!row.style.color && !row.style.opacity){
+                if(!row.classList.contains('agent') && !row.classList.contains('assassin')){
                     if(viewMe === 'green') row.classList.add('hint-green');
                     if(viewMe === 'black') row.classList.add('hint-black');
                 }
+                
                 row.onclick = async () => {
                     const otherView = (myRole === 'A') ? item.role_b_view : item.role_a_view;
-                    let res = 'civil';
-                    if(otherView === 'green') res = 'agent';
-                    if(otherView === 'black') res = 'assassin';
-                    if (hints && hints.length > 0) {
-                        const last = hints[hints.length-1];
-                        const upd = last.revealed_words ? (last.revealed_words + ',' + item.word + ':' + res) : (item.word + ':' + res);
-                        await mySupabase.from('game_hints').update({ revealed_words: upd }).eq('id', last.id);
-                    }
+                    let res = otherView === 'green' ? 'agent' : (otherView === 'black' ? 'assassin' : 'civil');
                     await mySupabase.from('game_state').update((myRole === 'A') ? {status_a: res} : {status_b: res}).eq('id', item.id);
                     if(res === 'civil') document.getElementById('endTurnBtn').click();
                 };
                 board.appendChild(row);
             });
             const hist = document.getElementById('clueHistory');
-            hist.innerHTML = hints ? hints.map(h => `<div class="history-log">// [${h.sent_by}] clue: "${h.clue_text}" (${h.clue_number})</div>`).join('') : '';
-            hist.scrollTop = hist.scrollHeight;
+            hist.innerHTML = hints ? hints.map(h => `<div style="color:#888;">// [${h.sent_by}] clue: "${h.clue_text}" (${h.clue_number})</div>`).join('') : '';
         }
 
-        updateSidebar();
-        setInterval(loadGame, 2000);
-        loadGame();
+        updateSidebar(); setInterval(loadGame, 2000); loadGame();
     </script>
 </body>
 </html>
