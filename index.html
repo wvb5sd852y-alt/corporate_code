@@ -67,11 +67,12 @@
         .code-area { flex-grow: 1; padding-left: 10px; }
         
         .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0 40px; }
-        .word-row { cursor: pointer; white-space: nowrap; padding: 0 5px; border-radius: 3px; }
+        .word-row { cursor: pointer; white-space: nowrap; padding: 0 5px; border-radius: 3px; position: relative; }
         .word-row:hover { background: #2a2d2e; }
         .key { color: var(--syntax-key); }
         .val { color: var(--syntax-string); }
 
+        .agent, .civil, .assassin { pointer-events: none; }
         .agent .val { color: var(--syntax-comment) !important; font-style: italic; }
         .agent::after { content: " // OK_SYNC"; color: var(--syntax-comment); font-size: 11px; }
         .civil { opacity: 0.3; }
@@ -79,13 +80,28 @@
         .assassin .val { color: #f44747 !important; font-weight: bold; }
         .assassin::after { content: " // FATAL_ERROR"; color: #f44747; font-size: 11px; }
 
+        /* PASTILLE GUESS SYNCHRONISÉE */
+        .guessed::before {
+            content: "";
+            position: absolute;
+            left: -12px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 8px;
+            height: 8px;
+            background-color: #007acc;
+            border-radius: 50%;
+            box-shadow: 0 0 8px #007acc;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse { 0% { opacity: 0.6; } 50% { opacity: 1; } 100% { opacity: 0.6; } }
+
         .terminal-panel { height: 220px; background: var(--bg-terminal); border-top: 1px solid var(--border); display: flex; flex-direction: column; }
         .terminal-tabs { background: var(--bg-main); display: flex; padding: 0 20px; height: 35px; align-items: center; border-bottom: 1px solid #2d2d2d; font-size: 11px; color: #858585; }
         .terminal-tab { cursor: pointer; text-transform: uppercase; padding: 8px 0; margin-right: 20px; }
         .terminal-tab.active { color: #fff; border-bottom: 1px solid var(--vscode-blue); }
         .terminal-actions-right { margin-left: auto; display: flex; gap: 15px; align-items: center; }
         .terminal-actions-right svg { width: 14px; height: 14px; color: #858585; cursor: pointer; }
-        .terminal-actions-right svg:hover { color: #fff; }
         
         .terminal-content { flex-grow: 1; padding: 12px 20px; overflow-y: auto; font-family: 'Consolas', monospace; font-size: 12px; color: #cccccc; }
         .term-prompt { color: #6a9955; font-weight: bold; }
@@ -134,7 +150,6 @@
                 <div class="tree-item"><span style="color:#ffffff">⌄</span> src</div>
                 <div class="tree-item active" style="padding-left:30px;"><span style="color:#cbcb41">{}</span> word_matrix.json</div>
                 <div class="tree-item" style="padding-left:30px;">📄 hardware.ts</div>
-                <div class="tree-item">📄 package.json</div>
             </div>
             <div class="sidebar-header">Source Control</div>
             <div class="file-tree staging-area" id="stagingArea"></div>
@@ -156,21 +171,8 @@
                         // --- EMBEDDED SYSTEM KERNEL DRIVERS ---<br>
                         <span style="color:var(--syntax-keyword)">async function</span> <span style="color:var(--syntax-key)">initBusProtocol</span>() {<br>
                         &nbsp;&nbsp;const i2c = new I2C_Controller({ freq: <span style="color:var(--syntax-string)">400000</span> });<br>
-                        &nbsp;&nbsp;await i2c.handshake(<span style="color:var(--syntax-string)">0x3F</span>);<br>
                         &nbsp;&nbsp;return i2c.status === 'READY';<br>
-                        }<br><br>
-                        <span style="color:var(--syntax-keyword)">function</span> <span style="color:var(--syntax-key)">watchdogRefresh</span>() {<br>
-                        &nbsp;&nbsp;if (mem_usage > <span style="color:var(--syntax-string)">0.85</span>) {<br>
-                        &nbsp;&nbsp;&nbsp;&nbsp;console.warn(<span style="color:var(--syntax-string)">"MEMORY_CRITICAL_REFRESH"</span>);<br>
-                        &nbsp;&nbsp;&nbsp;&nbsp;System.GC();<br>
-                        &nbsp;&nbsp;}<br>
-                        }<br><br>
-                        <span style="color:var(--syntax-keyword)">export const</span> <span style="color:var(--syntax-key)">BRIDGE_V2</span> = {<br>
-                        &nbsp;&nbsp;id: <span style="color:var(--syntax-string)">"GEII-78-T"</span>,<br>
-                        &nbsp;&nbsp;buffer: new Uint8Array(<span style="color:var(--syntax-string)">1024</span>),<br>
-                        &nbsp;&nbsp;flags: [<span style="color:var(--syntax-string)">"INT_EN"</span>, <span style="color:var(--syntax-string)">"DMA_BURST"</span>]<br>
-                        };<br><br>
-                        // EOF
+                        }<br>
                         <div style="height: 600px;"></div>
                     </div>
                 </div>
@@ -178,14 +180,10 @@
 
             <div class="terminal-panel">
                 <div class="terminal-tabs">
-                    <div class="terminal-tab">Problems</div><div class="terminal-tab">Output</div><div class="terminal-tab">Debug Console</div><div class="terminal-tab active">Terminal</div><div class="terminal-tab">Ports</div>
+                    <div class="terminal-tab">Problems</div><div class="terminal-tab active">Terminal</div>
                     <div class="terminal-actions-right">
                         <button id="newGameBtn" class="status-btn" style="color:#6a9955; display:none; font-weight:bold;">RELOAD_GAME</button>
                         <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/></svg>
-                        <svg viewBox="0 0 16 16" fill="currentColor"><path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/></svg>
-                        <svg viewBox="0 0 16 16" fill="currentColor"><path d="M3 9.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z"/></svg>
-                        <svg viewBox="0 0 16 16" fill="currentColor"><path d="M1.5 1a.5.5 0 0 0-.5.5v13a.5.5 0 0 0 .5.5h13a.5.5 0 0 0 .5-.5v-13a.5.5 0 0 0-.5-.5h-13z"/></svg>
-                        <svg viewBox="0 0 16 16" fill="currentColor"><path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/></svg>
                     </div>
                 </div>
                 <div class="terminal-content">
@@ -205,14 +203,13 @@
             <div class="status-btn"><svg viewBox="0 0 16 16" fill="currentColor" width="14"><path d="M8 2a6 6 0 1 0 0 12A6 6 0 0 0 8 2zM1 8a7 7 0 1 1 14 0A7 7 0 0 1 1 8z"/><path d="M7 10h2v1H7v-1zm0-6h2v5H7V4z"/></svg><span>master*</span></div>
             <div style="display: flex; align-items: center; gap: 8px; margin: 0 10px; opacity: 0.8;">
                 <span><svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><path d="M7.938 2.016A.13.13 0 0 1 8.002 2a.13.13 0 0 1 .063.016.146.13 0 0 1 .054.057l6.857 11.667c.036.06.035.124.002.183a.163.163 0 0 1-.054.06.116.116 0 0 1-.066.017H1.146a.115.116 0 0 1-.066-.017.163.163 0 0 1-.054-.06.176.176 0 0 1 .002-.183L7.884 2.073a.147.147 0 0 1 .054-.057zm1.044-.454a1.15 1.15 0 0 0-1.964 0L.154 13.227a1.173 1.173 0 0 0 1.003 1.773h13.686a1.173 1.173 0 0 0 1.003-1.773L8.982 1.562z"/></svg> 0</span>
-                <span><svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><path d="M14.778.085A.5.5 0 0 1 15 .5V8a.5.5 0 0 1-.314.464L14.5 8.5l-.186-.036A.5.5 0 0 1 14 8V.5a.5.5 0 0 1 .778-.415zM14.5 12a1 1 0 1 1 0-2 1 1 0 0 1 0 2zM.5 15a.5.5 0 0 1-.464-.314l-.036-.186A.5.5 0 0 1 0 14V.5a.5.5 0 0 1 .5-.5h7.5a.5.5 0 0 1 .464.314l.036.186A.5.5 0 0 1 8 1v13.5a.5.5 0 0 1-.5.5H.5z"/></svg> 0</span>
             </div>
             <button id="queueClueBtn" class="status-btn"><svg viewBox="0 0 16 16" fill="currentColor" width="14"><path d="M8 4.5l-4 4h3V12h2V8.5h3l-4-4zM2 14v-1h12v1H2z"/></svg></button>
             <button id="sendClueBtn" class="status-btn"><svg viewBox="0 0 16 16" fill="currentColor" width="14"><path d="M11.5 8l-4-4v3H3v2h4.5v3l4-4zM14 2v12h-1V2h1z"/></svg></button>
             <button id="endTurnBtn" class="status-btn"><svg viewBox="0 0 16 16" fill="currentColor" width="14"><path d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2v1z"/><path d="M8 4.5l2-2.5-2-2.5v5z"/></svg></button>
         </div>
         <div style="display: flex; gap: 0; align-items: center; height: 100%;">
-            <span id="tokenCounter" style="padding: 0 15px; font-weight: bold; color: #ffd700;">15</span>
+            <span id="tokenCounter" style="padding: 0 15px; font-weight: bold; color: #ffd700;">9</span>
             <span id="turnIndicator" style="padding: 0 10px;">...</span>
             <span style="padding: 0 10px;">UTF-8</span>
             <span style="padding: 0 10px;">JSON</span>
@@ -221,7 +218,7 @@
 
     <script>
         const SUPABASE_URL = 'https://ftvxmlxdovbgcxdayzvn.supabase.co'; 
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ0dnhtbHhkb3ZiZ2N4ZGF5enZuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg0NzgwNDcsImV4cCI6MjA5NDA1NDA0N30.IOHBBGzED0FV1xRYKOMsJapjACpeX2JVEhfNgXXT4B8'; 
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ0dnhtbHhkb3ZiZ2N4ZGF5enZvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg0NzgwNDcsImV4cCI6MjA5NDA1NDA0N30.IOHBBGzED0FV1xRYKOMsJapjACpeX2JVEhfNgXXT4B8'; 
         const mySupabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
         const myRole = (new URLSearchParams(window.location.search).get('role') || 'A').toUpperCase();
         let pendingClues = JSON.parse(localStorage.getItem('pending_clues') || '[]');
@@ -230,7 +227,7 @@
             const staging = document.getElementById('stagingArea'); staging.innerHTML = '';
             pendingClues.forEach((c, index) => {
                 const item = document.createElement('div');
-                item.className = 'tree-item';
+                item.className = 'tree-item pending-file';
                 item.innerHTML = `M <span style="color:#ce9178; font-weight:bold; margin-left:5px;">${c.text.toUpperCase()}</span> (${c.num})`;
                 item.onclick = () => { document.getElementById('clueText').value = c.text; document.getElementById('clueNum').value = c.num; };
                 item.oncontextmenu = (e) => { e.preventDefault(); pendingClues.splice(index, 1); savePending(); };
@@ -257,6 +254,8 @@
         };
 
         document.getElementById('endTurnBtn').onclick = async () => {
+            // Effacer TOUTES les pastilles en BDD au changement de tour
+            await mySupabase.from('game_state').update({ is_guessed: false }).neq('id', 0);
             const next = (myRole === 'A') ? 'B' : 'A';
             await mySupabase.from('game_control').update({ current_turn: next }).eq('id', 1);
         };
@@ -265,25 +264,17 @@
             localStorage.removeItem('pending_clues');
             const { data: bank } = await mySupabase.from('word_bank').select('word');
             const shuffled = bank.sort(() => 0.5 - Math.random()).slice(0, 25);
-            
             const roles = Array(25).fill(null).map(() => ({ a: 'neutral', b: 'neutral' }));
             const idx = [...Array(25).keys()].sort(() => 0.5 - Math.random());
-            
-            // 3 Verts communs
             idx.slice(0, 3).forEach(i => { roles[i].a='green'; roles[i].b='green'; });
-            // 6 Verts uniques pour A
             idx.slice(3, 9).forEach(i => roles[i].a='green');
-            // 6 Verts uniques pour B
             idx.slice(9, 15).forEach(i => roles[i].b='green');
-            
-            // LOGIQUE NOIRS (ASSASSINS) DUEL
-            roles[idx[15]].a = 'black'; roles[idx[15]].b = 'black'; // 1 Commun
-            roles[idx[16]].a = 'black'; roles[idx[16]].b = 'green'; // 1 Noir A / Vert B
-            roles[idx[17]].a = 'black'; roles[idx[17]].b = 'neutral'; // 1 Noir A / Gris B
-            roles[idx[18]].b = 'black'; roles[idx[18]].a = 'green'; // 1 Noir B / Vert A
-            roles[idx[19]].b = 'black'; roles[idx[19]].a = 'neutral'; // 1 Noir B / Gris A
-
-            const boardData = shuffled.map((w, i) => ({ word: w.word, role_a_view: roles[i].a, role_b_view: roles[i].b, status_a: 'neutral', status_b: 'neutral' }));
+            roles[idx[15]].a = 'black'; roles[idx[15]].b = 'black';
+            roles[idx[16]].a = 'black'; roles[idx[16]].b = 'green';
+            roles[idx[17]].a = 'black'; roles[idx[17]].b = 'neutral';
+            roles[idx[18]].b = 'black'; roles[idx[18]].a = 'green';
+            roles[idx[19]].b = 'black'; roles[idx[19]].a = 'neutral';
+            const boardData = shuffled.map((w, i) => ({ word: w.word, role_a_view: roles[i].a, role_b_view: roles[i].b, status_a: 'neutral', status_b: 'neutral', is_guessed: false }));
             await mySupabase.from('game_state').delete().neq('id', 0);
             await mySupabase.from('game_state').insert(boardData);
             await mySupabase.from('game_hints').delete().neq('id', 0);
@@ -307,7 +298,7 @@
             document.getElementById('statusBar').style.background = isGameOver ? "#e81123" : "#007acc";
 
             const whitesCount = words.filter(w => w.status_a === 'civil' || w.status_b === 'civil').length;
-            document.getElementById('tokenCounter').innerText = 15 - whitesCount;
+            document.getElementById('tokenCounter').innerText = 9 - whitesCount;
 
             const board = document.getElementById('board');
             board.className = (isMyTurn && !isGameOver) ? "grid" : "grid not-your-turn";
@@ -319,6 +310,8 @@
             words.forEach((item, i) => {
                 const row = document.createElement('div');
                 row.className = 'word-row';
+                if(item.is_guessed) row.classList.add('guessed');
+                
                 const idStr = (i + 1).toString().padStart(2, '0');
                 row.innerHTML = `<span class="key">"node_${idStr}"</span>: <span class="val">"${item.word}"</span>,`;
                 
@@ -341,9 +334,17 @@
                         const upd = last.revealed_words ? (last.revealed_words + ',' + item.word + ':' + res) : (item.word + ':' + res);
                         await mySupabase.from('game_hints').update({ revealed_words: upd }).eq('id', last.id);
                     }
-                    await mySupabase.from('game_state').update((myRole === 'A') ? {status_a: res} : {status_b: res}).eq('id', item.id);
+                    // Quand on clique (révèle), on enlève forcément la pastille guess en BDD
+                    await mySupabase.from('game_state').update((myRole === 'A') ? {status_a: res, is_guessed: false} : {status_b: res, is_guessed: false}).eq('id', item.id);
                     if(res === 'civil') document.getElementById('endTurnBtn').click();
                 };
+
+                row.oncontextmenu = async (e) => {
+                    e.preventDefault();
+                    // Synchronisation BDD de la pastille (toggle)
+                    await mySupabase.from('game_state').update({ is_guessed: !item.is_guessed }).eq('id', item.id);
+                };
+
                 board.appendChild(row);
             });
 
