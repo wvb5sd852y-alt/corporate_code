@@ -141,6 +141,7 @@
                 <div class="tree-item"><span style="color:#ffffff">⌄</span> src</div>
                 <div class="tree-item active" style="padding-left:30px;"><span style="color:#cbcb41">{}</span> word_matrix.json</div>
                 <div class="tree-item" style="padding-left:30px;">📄 hardware.ts</div>
+                <div class="tree-item">📄 package.json</div>
             </div>
             <div class="sidebar-header">Source Control</div>
             <div class="file-tree staging-area" id="stagingArea"></div>
@@ -249,15 +250,12 @@
         };
 
         document.getElementById('endTurnBtn').onclick = async () => {
-            // "Passer le tour" décrémente le compteur en créant un marqueur invisible
+            // DÉCRÉMENTER LE COMPTEUR : On marque un mot "passé" en civil pour faire baisser le compteur
             const { data: currentWords } = await mySupabase.from('game_state').select('*');
-            const skipNode = currentWords.find(w => w.word === 'SYSTEM_SKIP');
-            if (skipNode) {
-                await mySupabase.from('game_state').update({ status_a: 'civil' }).eq('id', skipNode.id);
-            } else {
-                // Si pas encore de node de skip, on utilise le premier mot civil disponible
-                const firstCivil = currentWords.find(w => w.status_a === 'neutral' && w.role_a_view === 'neutral' && w.role_b_view === 'neutral');
-                if (firstCivil) await mySupabase.from('game_state').update({ status_a: 'civil' }).eq('id', firstCivil.id);
+            // On cherche un mot neutre qui n'est ni agent ni assassin ni civil chez aucun joueur
+            const firstNeutral = currentWords.find(w => w.status_a === 'neutral' && w.status_b === 'neutral' && w.role_a_view === 'neutral' && w.role_b_view === 'neutral');
+            if (firstNeutral) {
+                await mySupabase.from('game_state').update({ status_a: 'civil' }).eq('id', firstNeutral.id);
             }
             
             await mySupabase.from('game_state').update({ is_guessed: false }).neq('id', 0);
@@ -297,12 +295,10 @@
             if (!words || words.length === 0) { document.getElementById('newGameBtn').style.display = 'block'; return; }
 
             const isGameOver = words.some(w => w.status_a === 'assassin' || w.status_b === 'assassin');
-            const allFound = words.filter(w => w.status_a === 'agent' || w.status_b === 'agent').length >= 15;
+            const allFound = words.filter(w => (w.role_a_view === 'green' && w.status_a === 'agent') || (w.role_b_view === 'green' && w.status_b === 'agent')).length >= 15;
             
             const whitesCount = words.filter(w => w.status_a === 'civil' || w.status_b === 'civil').length;
             const remainingTokens = Math.max(0, 9 - whitesCount);
-            
-            // MORT SUBITE : Si tokens == 0, les deux rôles sont actifs
             const isSuddenDeath = remainingTokens === 0 && !isGameOver && !allFound;
             const isMyTurn = isSuddenDeath || (ctrl.current_turn === myRole);
             
@@ -346,8 +342,6 @@
                         await mySupabase.from('game_hints').update({ revealed_words: upd }).eq('id', last.id);
                     }
                     await mySupabase.from('game_state').update((myRole === 'A') ? {status_a: res, is_guessed: false} : {status_b: res, is_guessed: false}).eq('id', item.id);
-                    
-                    // En mort subite, on ne change pas de tour, sauf si on perd (res == civil/assassin)
                     if(res === 'civil' && !isSuddenDeath) document.getElementById('endTurnBtn').click();
                 };
 
