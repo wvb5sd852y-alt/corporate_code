@@ -84,6 +84,10 @@
             width: 8px; height: 8px; background-color: var(--vscode-blue); border-radius: 50%; box-shadow: 0 0 8px var(--vscode-blue);
         }
 
+        /* VISIBILITÉ ACCRUE DES MARQUEURS */
+        .hint-green { border-left: 3px solid #4ade80 !important; padding-left: 8px !important; }
+        .hint-black { border-left: 3px solid #f87171 !important; padding-left: 8px !important; }
+
         .terminal-panel { height: 220px; background: var(--bg-terminal); border-top: 1px solid var(--border); display: flex; flex-direction: column; }
         .terminal-tabs { background: var(--bg-main); display: flex; padding: 0 20px; height: 35px; align-items: center; border-bottom: 1px solid #2d2d2d; font-size: 11px; color: #858585; }
         .terminal-tab { cursor: pointer; text-transform: uppercase; padding: 8px 0; margin-right: 20px; }
@@ -98,8 +102,6 @@
         .status-btn { background: transparent; border: none; color: white; font-size: 11px; padding: 0 10px; cursor: pointer; height: 100%; display: flex; align-items: center; gap: 5px; }
         .status-btn:hover { background: rgba(255,255,255,0.1); }
 
-        .hint-green { border-left: 2px solid #3e5a30; }
-        .hint-black { border-left: 2px solid #4a1c1c; }
         .not-your-turn { opacity: 0.6; pointer-events: none; }
     </style>
 </head>
@@ -205,6 +207,7 @@
             <button id="endTurnBtn" class="status-btn"><svg viewBox="0 0 16 16" fill="currentColor" width="14"><path d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2v1z"/><path d="M8 4.5l2-2.5-2-2.5v5z"/></svg></button>
         </div>
         <div style="display: flex; gap: 0; align-items: center; height: 100%;">
+            <span id="greenCounter" style="padding: 0 15px; color: #4ade80; font-weight: bold; border-right: 1px solid #333;">15/15</span>
             <span id="tokenCounter" style="padding: 0 15px; font-weight: bold; color: #ffd700;">9</span>
             <span id="turnIndicator" style="padding: 0 10px;">...</span>
             <span style="padding: 0 10px;">UTF-8</span>
@@ -250,14 +253,13 @@
         };
 
         document.getElementById('endTurnBtn').onclick = async () => {
-            // DÉCRÉMENTER LE COMPTEUR : On marque un mot "passé" en civil pour faire baisser le compteur
-            const { data: currentWords } = await mySupabase.from('game_state').select('*');
-            // On cherche un mot neutre qui n'est ni agent ni assassin ni civil chez aucun joueur
-            const firstNeutral = currentWords.find(w => w.status_a === 'neutral' && w.status_b === 'neutral' && w.role_a_view === 'neutral' && w.role_b_view === 'neutral');
-            if (firstNeutral) {
-                await mySupabase.from('game_state').update({ status_a: 'civil' }).eq('id', firstNeutral.id);
+            const { data: words } = await mySupabase.from('game_state').select('*');
+            // On décrémente le compteur en marquant un mot fantôme
+            const currentCivilCount = words.filter(w => w.status_a === 'civil' || w.status_b === 'civil').length;
+            if (currentCivilCount < 9) {
+                const available = words.find(w => w.status_a === 'neutral' && w.status_b === 'neutral' && w.role_a_view === 'neutral' && w.role_b_view === 'neutral');
+                if (available) await mySupabase.from('game_state').update({ status_a: 'civil' }).eq('id', available.id);
             }
-            
             await mySupabase.from('game_state').update({ is_guessed: false }).neq('id', 0);
             const next = (myRole === 'A') ? 'B' : 'A';
             await mySupabase.from('game_control').update({ current_turn: next }).eq('id', 1);
@@ -269,7 +271,6 @@
             const shuffled = bank.sort(() => 0.5 - Math.random()).slice(0, 25);
             const roles = Array(25).fill(null).map(() => ({ a: 'neutral', b: 'neutral' }));
             const idx = [...Array(25).keys()].sort(() => 0.5 - Math.random());
-            
             idx.slice(0, 3).forEach(i => { roles[i].a='green'; roles[i].b='green'; });
             idx.slice(3, 9).forEach(i => roles[i].a='green');
             idx.slice(9, 15).forEach(i => roles[i].b='green');
@@ -278,7 +279,6 @@
             roles[idx[17]].a = 'black'; roles[idx[17]].b = 'neutral';
             roles[idx[18]].b = 'black'; roles[idx[18]].a = 'green';
             roles[idx[19]].b = 'black'; roles[idx[19]].a = 'neutral';
-
             const boardData = shuffled.map((w, i) => ({ word: w.word, role_a_view: roles[i].a, role_b_view: roles[i].b, status_a: 'neutral', status_b: 'neutral', is_guessed: false }));
             await mySupabase.from('game_state').delete().neq('id', 0);
             await mySupabase.from('game_state').insert(boardData);
@@ -295,17 +295,28 @@
             if (!words || words.length === 0) { document.getElementById('newGameBtn').style.display = 'block'; return; }
 
             const isGameOver = words.some(w => w.status_a === 'assassin' || w.status_b === 'assassin');
-            const allFound = words.filter(w => (w.role_a_view === 'green' && w.status_a === 'agent') || (w.role_b_view === 'green' && w.status_b === 'agent')).length >= 15;
             
+            // Calcul des mots verts restants (15 au total)
+            const foundGreens = words.filter(w => (w.role_a_view === 'green' && w.status_a === 'agent') || (w.role_b_view === 'green' && w.status_b === 'agent')).length;
+            const allFound = foundGreens >= 15;
+            document.getElementById('greenCounter').innerText = `${foundGreens}/15`;
+
+            // Vérifier si MOI j'ai fini de trouver mes mots
+            const myTargetView = (myRole === 'A') ? 'role_b_view' : 'role_a_view'; 
+            const myFoundCount = words.filter(w => w[myTargetView] === 'green' && (w.status_a === 'agent' || w.status_b === 'agent')).length;
+            const iAmDone = myFoundCount >= 9;
+
             const whitesCount = words.filter(w => w.status_a === 'civil' || w.status_b === 'civil').length;
             const remainingTokens = Math.max(0, 9 - whitesCount);
             const isSuddenDeath = remainingTokens === 0 && !isGameOver && !allFound;
-            const isMyTurn = isSuddenDeath || (ctrl.current_turn === myRole);
+            
+            // Si j'ai fini mes mots, je ne peux que donner des indices (clic bloqué)
+            const isMyTurn = !iAmDone && (isSuddenDeath || (ctrl.current_turn === myRole));
             
             document.getElementById('tokenCounter').innerText = remainingTokens;
             document.getElementById('newGameBtn').style.display = (isGameOver || allFound) ? 'block' : 'none';
-            document.getElementById('turnIndicator').innerText = isGameOver ? "ERR_CRITICAL" : (allFound ? "SUCCESS" : (isSuddenDeath ? "SUDDEN_DEATH_ACTIVE" : `LINE: ROLE_${ctrl.current_turn}_ACTIVE`));
-            document.getElementById('statusBar').style.background = isGameOver ? "#e81123" : (isSuddenDeath ? "#6a9955" : "#007acc");
+            document.getElementById('turnIndicator').innerText = isGameOver ? "ERR_CRITICAL" : (allFound ? "SUCCESS_MISSION" : (isSuddenDeath ? "SUDDEN_DEATH" : (iAmDone ? "ROLE_WAITING_FOR_PARTNER" : `LINE: ROLE_${ctrl.current_turn}_ACTIVE`)));
+            document.getElementById('statusBar').style.background = isGameOver ? "#e81123" : (allFound ? "#6a9955" : (isSuddenDeath ? "#d1a000" : "#007acc"));
 
             const board = document.getElementById('board');
             board.className = (isMyTurn && !isGameOver) ? "grid" : "grid not-your-turn";
@@ -361,7 +372,7 @@
                     revealedStr = ' -> found: ';
                     revealedStr += h.revealed_words.split(',').map(pair => {
                         const [word, color] = pair.split(':');
-                        let style = color === 'agent' ? 'color:var(--syntax-comment); font-style:italic;' : (color === 'assassin' ? 'color:#f44747; font-weight:bold;' : 'opacity:0.3; text-decoration:line-through;');
+                        let style = color === 'agent' ? 'color:#4ade80; font-style:italic;' : (color === 'assassin' ? 'color:#f87171; font-weight:bold;' : 'opacity:0.3; text-decoration:line-through;');
                         return `<span style="${style}">${word}</span>`;
                     }).join(', ');
                 }
