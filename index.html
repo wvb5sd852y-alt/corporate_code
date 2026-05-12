@@ -94,7 +94,7 @@
         .terminal-actions-right { margin-left: auto; display: flex; gap: 15px; align-items: center; }
         .terminal-actions-right svg { width: 14px; height: 14px; color: #858585; cursor: pointer; }
         .terminal-actions-right svg:hover { color: #fff; }
-
+        
         .terminal-content { flex-grow: 1; padding: 12px 20px; overflow-y: auto; font-family: 'Consolas', monospace; font-size: 12px; color: #cccccc; }
         .term-prompt { color: #6a9955; font-weight: bold; }
 
@@ -268,14 +268,14 @@
             const roles = Array(25).fill(null).map(() => ({ a: 'neutral', b: 'neutral' }));
             const idx = [...Array(25).keys()].sort(() => 0.5 - Math.random());
             
-            // 3 Verts communs (comptent pour 1 carte physique)
+            // 3 Verts communs (Indices 0, 1, 2)
             idx.slice(0, 3).forEach(i => { roles[i].a='green'; roles[i].b='green'; });
-            // 6 Verts uniques pour A
+            // 6 Verts pour A (Indices 3, 4, 5, 6, 7, 8). Total A = 3 + 6 = 9
             idx.slice(3, 9).forEach(i => roles[i].a='green');
-            // 6 Verts uniques pour B
+            // 6 Verts pour B (Indices 9, 10, 11, 12, 13, 14). Total B = 3 + 6 = 9
             idx.slice(9, 15).forEach(i => roles[i].b='green');
             
-            // Assassins Duel
+            // Assassins Duel (Le reste)
             roles[idx[15]].a = 'black'; roles[idx[15]].b = 'black';
             roles[idx[16]].a = 'black'; roles[idx[16]].b = 'green';
             roles[idx[17]].a = 'black'; roles[idx[17]].b = 'neutral';
@@ -299,16 +299,16 @@
 
             const isGameOver = words.some(w => w.status_a === 'assassin' || w.status_b === 'assassin');
             
-            // Compteur physique des cartes vertes révélées (sur 15 total)
+            // Compteur de mots verts restant à trouver (départ à 15 cartes physiques)
             const physicalGreensFound = words.filter(w => w.status_a === 'agent' || w.status_b === 'agent').length;
             const greensRemaining = Math.max(0, 15 - physicalGreensFound);
             document.getElementById('greenCounter').innerText = greensRemaining;
 
-            // Règle des 9 mots par joueur pour passage de tour
             const myGreensFound = (myRole === 'A') ? ctrl.greens_found_a : ctrl.greens_found_b;
             const iAmDone = myGreensFound >= 9;
             const allFound = (physicalGreensFound >= 15);
 
+            // Passage de tour automatique si j'ai trouvé mes 9 mots
             if (iAmDone && ctrl.current_turn === myRole && !allFound) {
                 await mySupabase.from('game_control').update({ current_turn: (myRole === 'A' ? 'B' : 'A') }).eq('id', 1);
             }
@@ -319,7 +319,7 @@
             
             document.getElementById('tokenCounter').innerText = remainingTokens;
             document.getElementById('newGameBtn').style.display = (isGameOver || allFound) ? 'block' : 'none';
-            document.getElementById('turnIndicator').innerText = isGameOver ? "ERR_CRITICAL" : (allFound ? "SUCCESS_MISSION_VICTOIRE" : (isSuddenDeath ? "SUDDEN_DEATH" : (iAmDone ? "FINISHED_WAITING" : `LINE: ROLE_${ctrl.current_turn}_ACTIVE`)));
+            document.getElementById('turnIndicator').innerText = isGameOver ? "ERR_CRITICAL" : (allFound ? "SUCCESS_MISSION_VICTOIRE" : (isSuddenDeath ? "SUDDEN_DEATH" : (iAmDone ? "ROLE_FINISHED_WAITING" : `LINE: ROLE_${ctrl.current_turn}_ACTIVE`)));
             document.getElementById('statusBar').style.background = isGameOver ? "#e81123" : (allFound ? "#28a745" : (isSuddenDeath ? "#d1a000" : "#007acc"));
 
             const board = document.getElementById('board');
@@ -359,6 +359,7 @@
                     
                     if(res === 'agent') {
                         let updObj = {};
+                        // Si vert pour les deux, on incrémente les deux compteurs de 1 (soit 2 au total)
                         if(item.role_a_view === 'green' && item.role_b_view === 'green') {
                             updObj = { greens_found_a: ctrl.greens_found_a + 1, greens_found_b: ctrl.greens_found_b + 1 };
                         } else {
