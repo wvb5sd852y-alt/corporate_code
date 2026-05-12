@@ -83,7 +83,8 @@
         /* PASTILLE GUESS */
         .guessed::before {
             content: ""; position: absolute; left: -10px; top: 50%; transform: translateY(-50%);
-            width: 7px; height: 7px; background-color: var(--vscode-blue); border-radius: 50%; box-shadow: 0 0 5px var(--vscode-blue);
+            width: 8px; height: 8px; background-color: var(--vscode-blue); border-radius: 50%; box-shadow: 0 0 8px var(--vscode-blue);
+            z-index: 10;
         }
 
         .terminal-panel { height: 220px; background: var(--bg-terminal); border-top: 1px solid var(--border); display: flex; flex-direction: column; }
@@ -164,6 +165,7 @@
                         // --- EMBEDDED SYSTEM KERNEL DRIVERS ---<br>
                         <span style="color:var(--syntax-keyword)">async function</span> <span style="color:var(--syntax-key)">initBusProtocol</span>() {<br>
                         &nbsp;&nbsp;const i2c = new I2C_Controller({ freq: <span style="color:var(--syntax-string)">400000</span> });<br>
+                        &nbsp;&nbsp;await i2c.handshake(<span style="color:var(--syntax-string)">0x3F</span>);<br>
                         &nbsp;&nbsp;return i2c.status === 'READY';<br>
                         }<br>
                         <div style="height: 600px;"></div>
@@ -224,7 +226,7 @@
             const staging = document.getElementById('stagingArea'); staging.innerHTML = '';
             pendingClues.forEach((c, index) => {
                 const item = document.createElement('div');
-                item.className = 'tree-item';
+                item.className = 'tree-item pending-file';
                 item.innerHTML = `M <span style="color:#ce9178; font-weight:bold; margin-left:5px;">${c.text.toUpperCase()}</span> (${c.num})`;
                 item.onclick = () => { document.getElementById('clueText').value = c.text; document.getElementById('clueNum').value = c.num; };
                 item.oncontextmenu = (e) => { e.preventDefault(); pendingClues.splice(index, 1); savePending(); };
@@ -266,6 +268,7 @@
             idx.slice(0, 3).forEach(i => { roles[i].a='green'; roles[i].b='green'; });
             idx.slice(3, 9).forEach(i => roles[i].a='green');
             idx.slice(9, 15).forEach(i => roles[i].b='green');
+            
             roles[idx[15]].a = 'black'; roles[idx[15]].b = 'black';
             roles[idx[16]].a = 'black'; roles[idx[16]].b = 'green';
             roles[idx[17]].a = 'black'; roles[idx[17]].b = 'neutral';
@@ -317,7 +320,7 @@
                 else if(statusMe === 'civil') row.classList.add('civil');
 
                 const viewMe = (myRole === 'A') ? item.role_a_view : item.role_b_view;
-                if(!row.classList.contains('agent') && !row.classList.contains('assassin') && !row.classList.contains('civil')){
+                if(!row.classList.contains('revealed')){
                     if(viewMe === 'green') row.classList.add('hint-green');
                     if(viewMe === 'black') row.classList.add('hint-black');
                 }
@@ -339,7 +342,9 @@
                 row.oncontextmenu = async (e) => {
                     e.preventDefault();
                     if(!row.classList.contains('revealed')) {
-                        await mySupabase.from('game_state').update({ is_guessed: !item.is_guessed }).eq('id', item.id);
+                        try {
+                            await mySupabase.from('game_state').update({ is_guessed: !item.is_guessed }).eq('id', item.id);
+                        } catch(e) { console.error("Oubli: lance la requête SQL ALTER TABLE."); }
                     }
                 };
                 board.appendChild(row);
