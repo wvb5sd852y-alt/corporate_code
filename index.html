@@ -93,6 +93,7 @@
         .terminal-tab.active { color: #fff; border-bottom: 1px solid var(--vscode-blue); }
         .terminal-actions-right { margin-left: auto; display: flex; gap: 15px; align-items: center; }
         .terminal-actions-right svg { width: 14px; height: 14px; color: #858585; cursor: pointer; }
+        .terminal-actions-right svg:hover { color: #fff; }
         
         .terminal-content { flex-grow: 1; padding: 12px 20px; overflow-y: auto; font-family: 'Consolas', monospace; font-size: 12px; color: #cccccc; }
         .term-prompt { color: #6a9955; font-weight: bold; }
@@ -130,7 +131,10 @@
             <div class="act-icon active"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg></div>
             <div class="act-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.1 12.5a2.1 2.1 0 0 0-2-1.5c-1 0-1.8.7-2 1.6l-5.1-3.1c.1-.3.1-.7.1-1a2.1 2.1 0 1 0-4.2 0c0 .4 0 .7.2 1l5 3.1c-.1.3-.1.7-.1 1a2.1 2.1 0 1 0 4.2 0c0-.4 0-.7-.2-1l5.1-3.1c.1.3.1.7.1 1a2.1 2.1 0 1 0 4.2 0c0-.4 0-.7-.2-1l-5.2-3.1z"/></svg></div>
             <div class="act-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 7h-2.1c-.2-.5-.5-.9-.8-1.3l1.4-1.4-1.4-1.4-2.2 2.2c-.6-.4-1.2-.7-1.9-.9V2h-2v2.2c-.7.2-1.3.5-1.9.9L5.9 2.9 4.5 4.3l1.4 1.4c-.3.4-.6.8-.8 1.3H3v2h2.1c0 .3-.1.7-.1 1H3v2h2.1c0 .3.1.7.1 1H3v2h2.1c.2.5.5.9.8 1.3l-1.4 1.4 1.4 1.4 2.2-2.2c.6.4 1.2.7 1.9.9V22h2v-2.2c.7-.2 1.3-.5 1.9-.9l2.2 2.2 1.4-1.4-1.4-1.4c.3-.4.6-.8.8-1.3H19v-2h-2.1c0-.3.1-.7.1-1H19v-2h-2.1c0-.3-.1-.7-.1-1H19V7zm-6 8h-2v-2h2v2zm0-4h-2V9h2v2z"/></svg></div>
+            <div class="act-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 13H5v-2h14v2zM5 15h14v2H5v-2zM5 9h14V7H5v2zM21 3H3a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h18a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2z"/></svg></div>
+            <div class="act-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.5 11H19V7h-4V5.5a2.5 2.5 0 0 0-5 0V7H6v4H4.5a2.5 2.5 0 0 0 0 5H6v4h4v-1.5a2.5 2.5 0 0 1 5 0V20h4v-4h1.5a2.5 2.5 0 0 0 0-5z"/></svg></div>
             <div class="act-icon" style="margin-top: auto;"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg></div>
+            <div class="act-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M19.14 12.94c.04-.3.06-.61.06-.94s-.02-.64-.06-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.04.3-.06.61-.06.94s.02.64.06.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg></div>
         </div>
 
         <div class="sidebar">
@@ -139,6 +143,7 @@
                 <div class="tree-item"><span style="color:#ffffff">⌄</span> src</div>
                 <div class="tree-item active" style="padding-left:30px;"><span style="color:#cbcb41">{}</span> word_matrix.json</div>
                 <div class="tree-item" style="padding-left:30px;">📄 hardware.ts</div>
+                <div class="tree-item">📄 package.json</div>
             </div>
             <div class="sidebar-header">Source Control</div>
             <div class="file-tree staging-area" id="stagingArea"></div>
@@ -160,7 +165,6 @@
                         // --- EMBEDDED SYSTEM KERNEL DRIVERS ---<br>
                         <span style="color:var(--syntax-keyword)">async function</span> <span style="color:var(--syntax-key)">initBusProtocol</span>() {<br>
                         &nbsp;&nbsp;const i2c = new I2C_Controller({ freq: <span style="color:var(--syntax-string)">400000</span> });<br>
-                        &nbsp;&nbsp;await i2c.handshake(<span style="color:var(--syntax-string)">0x3F</span>);<br>
                         &nbsp;&nbsp;return i2c.status === 'READY';<br>
                         }<br>
                         <div style="height: 600px;"></div>
@@ -170,10 +174,14 @@
 
             <div class="terminal-panel">
                 <div class="terminal-tabs">
-                    <div class="terminal-tab">Problems</div><div class="terminal-tab">Output</div><div class="terminal-tab active">Terminal</div>
+                    <div class="terminal-tab">Problems</div><div class="terminal-tab">Output</div><div class="terminal-tab">Debug Console</div><div class="terminal-tab active">Terminal</div><div class="terminal-tab">Ports</div>
                     <div class="terminal-actions-right">
                         <button id="newGameBtn" class="status-btn" style="color:#6a9955; display:none; font-weight:bold;">RELOAD_GAME</button>
                         <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/></svg>
+                        <svg viewBox="0 0 16 16" fill="currentColor"><path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/></svg>
+                        <svg viewBox="0 0 16 16" fill="currentColor"><path d="M3 9.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z"/></svg>
+                        <svg viewBox="0 0 16 16" fill="currentColor"><path d="M1.5 1a.5.5 0 0 0-.5.5v13a.5.5 0 0 0 .5.5h13a.5.5 0 0 0 .5-.5v-13a.5.5 0 0 0-.5-.5h-13z"/></svg>
+                        <svg viewBox="0 0 16 16" fill="currentColor"><path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/></svg>
                     </div>
                 </div>
                 <div class="terminal-content">
@@ -191,12 +199,16 @@
     <div class="status-bar" id="statusBar">
         <div style="display: flex; align-items: center; height: 100%;">
             <div class="status-btn"><svg viewBox="0 0 16 16" fill="currentColor" width="14"><path d="M8 2a6 6 0 1 0 0 12A6 6 0 0 0 8 2zM1 8a7 7 0 1 1 14 0A7 7 0 0 1 1 8z"/><path d="M7 10h2v1H7v-1zm0-6h2v5H7V4z"/></svg><span>master*</span></div>
+            <div style="display: flex; align-items: center; gap: 8px; margin: 0 10px; opacity: 0.8;">
+                <span><svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><path d="M7.938 2.016A.13.13 0 0 1 8.002 2a.13.13 0 0 1 .063.016.146.13 0 0 1 .054.057l6.857 11.667c.036.06.035.124.002.183a.163.163 0 0 1-.054.06.116.116 0 0 1-.066.017H1.146a.115.116 0 0 1-.066-.017.163.163 0 0 1-.054-.06.176.176 0 0 1 .002-.183L7.884 2.073a.147.147 0 0 1 .054-.057zm1.044-.454a1.15 1.15 0 0 0-1.964 0L.154 13.227a1.173 1.173 0 0 0 1.003 1.773h13.686a1.173 1.173 0 0 0 1.003-1.773L8.982 1.562z"/></svg> 0</span>
+                <span><svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><path d="M14.778.085A.5.5 0 0 1 15 .5V8a.5.5 0 0 1-.314.464L14.5 8.5l-.186-.036A.5.5 0 0 1 14 8V.5a.5.5 0 0 1 .778-.415zM14.5 12a1 1 0 1 1 0-2 1 1 0 0 1 0 2zM.5 15a.5.5 0 0 1-.464-.314l-.036-.186A.5.5 0 0 1 0 14V.5a.5.5 0 0 1 .5-.5h7.5a.5.5 0 0 1 .464.314l.036.186A.5.5 0 0 1 8 1v13.5a.5.5 0 0 1-.5.5H.5z"/></svg> 0</span>
+            </div>
             <button id="queueClueBtn" class="status-btn"><svg viewBox="0 0 16 16" fill="currentColor" width="14"><path d="M8 4.5l-4 4h3V12h2V8.5h3l-4-4zM2 14v-1h12v1H2z"/></svg></button>
             <button id="sendClueBtn" class="status-btn"><svg viewBox="0 0 16 16" fill="currentColor" width="14"><path d="M11.5 8l-4-4v3H3v2h4.5v3l4-4zM14 2v12h-1V2h1z"/></svg></button>
             <button id="endTurnBtn" class="status-btn"><svg viewBox="0 0 16 16" fill="currentColor" width="14"><path d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2v1z"/><path d="M8 4.5l2-2.5-2-2.5v5z"/></svg></button>
         </div>
         <div style="display: flex; gap: 0; align-items: center; height: 100%;">
-            <span id="greenCounter" style="padding: 0 15px; color: #4ade80; font-weight: bold; border-right: 1px solid #333;">0/15</span>
+            <span id="greenCounter" style="padding: 0 15px; color: #4ade80; font-weight: bold; border-right: 1px solid #333;">15</span>
             <span id="tokenCounter" style="padding: 0 15px; font-weight: bold; color: #ffd700;">9</span>
             <span id="turnIndicator" style="padding: 0 10px;">...</span>
             <span style="padding: 0 10px;">UTF-8</span>
@@ -255,9 +267,14 @@
             const roles = Array(25).fill(null).map(() => ({ a: 'neutral', b: 'neutral' }));
             const idx = [...Array(25).keys()].sort(() => 0.5 - Math.random());
             
+            // 3 Verts communs
             idx.slice(0, 3).forEach(i => { roles[i].a='green'; roles[i].b='green'; });
+            // 6 Verts pour A
             idx.slice(3, 9).forEach(i => roles[i].a='green');
+            // 6 Verts pour B
             idx.slice(9, 15).forEach(i => roles[i].b='green');
+            
+            // Assassins Duel
             roles[idx[15]].a = 'black'; roles[idx[15]].b = 'black';
             roles[idx[16]].a = 'black'; roles[idx[16]].b = 'green';
             roles[idx[17]].a = 'black'; roles[idx[17]].b = 'neutral';
@@ -280,12 +297,18 @@
             if (!words || words.length === 0) { document.getElementById('newGameBtn').style.display = 'block'; return; }
 
             const isGameOver = words.some(w => w.status_a === 'assassin' || w.status_b === 'assassin');
-            const totalGreens = ctrl.greens_found_a + ctrl.greens_found_b;
-            const allFound = totalGreens >= 15;
-            document.getElementById('greenCounter').innerText = `${totalGreens}/15`;
+            
+            // Compteur de mots verts restant à trouver (départ à 15)
+            // On compte les agents uniques révélés. Le commun compte pour 1 carte physique.
+            const uniqueAgentsFound = words.filter(w => w.status_a === 'agent' || w.status_b === 'agent').length;
+            const greensRemaining = Math.max(0, 15 - uniqueAgentsFound);
+            document.getElementById('greenCounter').innerText = greensRemaining;
 
             const myGreensFound = (myRole === 'A') ? ctrl.greens_found_a : ctrl.greens_found_b;
             const iAmDone = myGreensFound >= 9;
+            const partnerGreensFound = (myRole === 'A') ? ctrl.greens_found_b : ctrl.greens_found_a;
+            const partnerDone = partnerGreensFound >= 9;
+            const allFound = (uniqueAgentsFound >= 15);
 
             if (iAmDone && ctrl.current_turn === myRole && !allFound) {
                 await mySupabase.from('game_control').update({ current_turn: (myRole === 'A' ? 'B' : 'A') }).eq('id', 1);
@@ -297,7 +320,7 @@
             
             document.getElementById('tokenCounter').innerText = remainingTokens;
             document.getElementById('newGameBtn').style.display = (isGameOver || allFound) ? 'block' : 'none';
-            document.getElementById('turnIndicator').innerText = isGameOver ? "ERR_CRITICAL" : (allFound ? "SUCCESS_MISSION_VICTOIRE" : (isSuddenDeath ? "SUDDEN_DEATH" : (iAmDone ? "FINISHED_WAITING" : `LINE: ROLE_${ctrl.current_turn}_ACTIVE`)));
+            document.getElementById('turnIndicator').innerText = isGameOver ? "ERR_CRITICAL" : (allFound ? "MISSION_SUCCESS_VICTORY" : (isSuddenDeath ? "SUDDEN_DEATH" : (iAmDone ? "WAITING_PARTNER" : `LINE: ROLE_${ctrl.current_turn}_ACTIVE`)));
             document.getElementById('statusBar').style.background = isGameOver ? "#e81123" : (allFound ? "#28a745" : (isSuddenDeath ? "#d1a000" : "#007acc"));
 
             const board = document.getElementById('board');
@@ -337,7 +360,6 @@
                     
                     if(res === 'agent') {
                         let updObj = {};
-                        // BUG FIX: Si le mot est vert pour les DEUX, on incrémente A ET B
                         if(item.role_a_view === 'green' && item.role_b_view === 'green') {
                             updObj = { greens_found_a: ctrl.greens_found_a + 1, greens_found_b: ctrl.greens_found_b + 1 };
                         } else {
