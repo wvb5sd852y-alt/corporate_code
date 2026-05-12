@@ -165,6 +165,7 @@
                         // --- EMBEDDED SYSTEM KERNEL DRIVERS ---<br>
                         <span style="color:var(--syntax-keyword)">async function</span> <span style="color:var(--syntax-key)">initBusProtocol</span>() {<br>
                         &nbsp;&nbsp;const i2c = new I2C_Controller({ freq: <span style="color:var(--syntax-string)">400000</span> });<br>
+                        &nbsp;&nbsp;await i2c.handshake(<span style="color:var(--syntax-string)">0x3F</span>);<br>
                         &nbsp;&nbsp;return i2c.status === 'READY';<br>
                         }<br>
                         <div style="height: 600px;"></div>
@@ -264,24 +265,36 @@
             localStorage.removeItem('pending_clues');
             const { data: bank } = await mySupabase.from('word_bank').select('word');
             const shuffled = bank.sort(() => 0.5 - Math.random()).slice(0, 25);
-            const roles = Array(25).fill(null).map(() => ({ a: 'neutral', b: 'neutral' }));
-            const idx = [...Array(25).keys()].sort(() => 0.5 - Math.random());
             
-            // 3 Verts communs (Indices 0, 1, 2)
-            idx.slice(0, 3).forEach(i => { roles[i].a='green'; roles[i].b='green'; });
-            // 6 Verts uniques pour A (Indices 3 à 8). Total A = 3 + 6 = 9.
-            idx.slice(3, 9).forEach(i => roles[i].a='green');
-            // 6 Verts uniques pour B (Indices 9 à 14). Total B = 3 + 6 = 9.
-            idx.slice(9, 15).forEach(i => roles[i].b='green');
+            // DISTRIBUTION FIXE SUR 25 SLOTS
+            const layout = Array(25).fill(null).map(() => ({ a: 'neutral', b: 'neutral' }));
             
-            // Assassins Duel
-            roles[idx[15]].a = 'black'; roles[idx[15]].b = 'black';
-            roles[idx[16]].a = 'black'; roles[idx[16]].b = 'green';
-            roles[idx[17]].a = 'black'; roles[idx[17]].b = 'neutral';
-            roles[idx[18]].b = 'black'; roles[idx[18]].a = 'green';
-            roles[idx[19]].b = 'black'; roles[idx[19]].a = 'neutral';
+            // 1. Les 3 communs (Slots 0, 1, 2)
+            for(let i=0; i<3; i++) { layout[i].a = 'green'; layout[i].b = 'green'; }
+            // 2. Les 6 uniques pour A (Slots 3 à 8)
+            for(let i=3; i<9; i++) { layout[i].a = 'green'; }
+            // 3. Les 6 uniques pour B (Slots 9 à 14)
+            for(let i=9; i<15; i++) { layout[i].b = 'green'; }
+            
+            // 4. Assassins (Slots 15 à 19)
+            layout[15].a = 'black'; layout[15].b = 'black';
+            layout[16].a = 'black'; layout[16].b = 'green';
+            layout[17].a = 'black'; layout[17].b = 'neutral';
+            layout[18].b = 'black'; layout[18].a = 'green';
+            layout[19].b = 'black'; layout[19].a = 'neutral';
 
-            const boardData = shuffled.map((w, i) => ({ word: w.word, role_a_view: roles[i].a, role_b_view: roles[i].b, status_a: 'neutral', status_b: 'neutral', is_guessed: false }));
+            // Mélange du layout pour ne pas que les index soient prévisibles
+            const shuffledLayout = layout.sort(() => 0.5 - Math.random());
+
+            const boardData = shuffled.map((w, i) => ({ 
+                word: w.word, 
+                role_a_view: shuffledLayout[i].a, 
+                role_b_view: shuffledLayout[i].b, 
+                status_a: 'neutral', 
+                status_b: 'neutral', 
+                is_guessed: false 
+            }));
+
             await mySupabase.from('game_state').delete().neq('id', 0);
             await mySupabase.from('game_state').insert(boardData);
             await mySupabase.from('game_hints').delete().neq('id', 0);
@@ -315,7 +328,7 @@
             
             document.getElementById('tokenCounter').innerText = remainingTokens;
             document.getElementById('newGameBtn').style.display = (isGameOver || allFound) ? 'block' : 'none';
-            document.getElementById('turnIndicator').innerText = isGameOver ? "ERR_CRITICAL" : (allFound ? "SUCCESS_MISSION_VICTOIRE" : (isSuddenDeath ? "SUDDEN_DEATH" : (iAmDone ? "ROLE_FINISHED_WAITING" : `LINE: ROLE_${ctrl.current_turn}_ACTIVE`)));
+            document.getElementById('turnIndicator').innerText = isGameOver ? "ERR_CRITICAL" : (allFound ? "MISSION_SUCCESS_VICTOIRE" : (isSuddenDeath ? "SUDDEN_DEATH" : (iAmDone ? "ROLE_FINISHED_WAITING" : `LINE: ROLE_${ctrl.current_turn}_ACTIVE`)));
             document.getElementById('statusBar').style.background = isGameOver ? "#e81123" : (allFound ? "#28a745" : (isSuddenDeath ? "#d1a000" : "#007acc"));
 
             const board = document.getElementById('board');
