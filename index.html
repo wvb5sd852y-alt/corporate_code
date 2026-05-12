@@ -73,8 +73,8 @@
         .val { color: var(--syntax-string); }
 
         .revealed { pointer-events: none !important; }
-        .agent .val { color: var(--syntax-comment) !important; font-style: italic; }
-        .agent::after { content: " // OK"; color: var(--syntax-comment); font-size: 10px; margin-left: 4px; }
+        .agent .val { color: #4ade80 !important; font-style: italic; }
+        .agent::after { content: " // OK"; color: #4ade80; font-size: 10px; margin-left: 4px; }
         .civil { opacity: 0.4; }
         .civil .val { text-decoration: line-through; }
         .assassin .val { color: #f44747 !important; font-weight: bold; }
@@ -143,6 +143,7 @@
                 <div class="tree-item"><span style="color:#ffffff">⌄</span> src</div>
                 <div class="tree-item active" style="padding-left:30px;"><span style="color:#cbcb41">{}</span> word_matrix.json</div>
                 <div class="tree-item" style="padding-left:30px;">📄 hardware.ts</div>
+                <div class="tree-item">📄 package.json</div>
             </div>
             <div class="sidebar-header">Source Control</div>
             <div class="file-tree staging-area" id="stagingArea"></div>
@@ -164,7 +165,6 @@
                         // --- EMBEDDED SYSTEM KERNEL DRIVERS ---<br>
                         <span style="color:var(--syntax-keyword)">async function</span> <span style="color:var(--syntax-key)">initBusProtocol</span>() {<br>
                         &nbsp;&nbsp;const i2c = new I2C_Controller({ freq: <span style="color:var(--syntax-string)">400000</span> });<br>
-                        &nbsp;&nbsp;await i2c.handshake(<span style="color:var(--syntax-string)">0x3F</span>);<br>
                         &nbsp;&nbsp;return i2c.status === 'READY';<br>
                         }<br>
                         <div style="height: 600px;"></div>
@@ -174,7 +174,7 @@
 
             <div class="terminal-panel">
                 <div class="terminal-tabs">
-                    <div class="terminal-tab">Problems</div><div class="terminal-tab">Output</div><div class="terminal-tab active">Terminal</div><div class="terminal-tab">Ports</div>
+                    <div class="terminal-tab">Problems</div><div class="terminal-tab">Output</div><div class="terminal-tab">Debug Console</div><div class="terminal-tab active">Terminal</div><div class="terminal-tab">Ports</div>
                     <div class="terminal-actions-right">
                         <button id="newGameBtn" class="status-btn" style="color:#6a9955; display:none; font-weight:bold;">RELOAD_GAME</button>
                         <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/></svg>
@@ -267,14 +267,14 @@
             const roles = Array(25).fill(null).map(() => ({ a: 'neutral', b: 'neutral' }));
             const idx = [...Array(25).keys()].sort(() => 0.5 - Math.random());
             
-            // 3 Verts communs
+            // 3 Verts communs (Indices 0, 1, 2)
             idx.slice(0, 3).forEach(i => { roles[i].a='green'; roles[i].b='green'; });
-            // 6 Verts pour A (Total A = 3+6=9)
-            idx.slice(4, 9).forEach(i => roles[i].a='green');
-            // 6 Verts pour B (Total B = 3+6=9)
-            idx.slice(10, 15).forEach(i => roles[i].b='green');
+            // 6 Verts uniques pour A (Indices 3 à 8). Total A = 3 + 6 = 9.
+            idx.slice(3, 9).forEach(i => roles[i].a='green');
+            // 6 Verts uniques pour B (Indices 9 à 14). Total B = 3 + 6 = 9.
+            idx.slice(9, 15).forEach(i => roles[i].b='green');
             
-            // Assassins
+            // Assassins Duel
             roles[idx[15]].a = 'black'; roles[idx[15]].b = 'black';
             roles[idx[16]].a = 'black'; roles[idx[16]].b = 'green';
             roles[idx[17]].a = 'black'; roles[idx[17]].b = 'neutral';
