@@ -72,19 +72,18 @@
         .key { color: var(--syntax-key); }
         .val { color: var(--syntax-string); }
 
-        /* SÉCURITÉ ET ÉTATS */
-        .agent, .civil, .assassin { pointer-events: none !important; }
+        /* ÉTATS RÉVÉLÉS ET SÉCURITÉ */
+        .revealed { pointer-events: none !important; }
         .agent .val { color: var(--syntax-comment) !important; font-style: italic; }
-        .agent::after { content: " // OK_SYNC"; color: var(--syntax-comment); font-size: 11px; }
-        .civil { opacity: 0.3; }
+        .agent::after { content: " // OK"; color: var(--syntax-comment); font-size: 10px; margin-left: 4px; }
+        .civil { opacity: 0.4; }
         .civil .val { text-decoration: line-through; }
         .assassin .val { color: #f44747 !important; font-weight: bold; }
-        .assassin::after { content: " // FATAL_ERROR"; color: #f44747; font-size: 11px; }
 
-        /* PASTILLE GUESS SYNCHRONISÉE */
+        /* PASTILLE GUESS */
         .guessed::before {
-            content: ""; position: absolute; left: -12px; top: 50%; transform: translateY(-50%);
-            width: 8px; height: 8px; background-color: #007acc; border-radius: 50%; box-shadow: 0 0 8px #007acc;
+            content: ""; position: absolute; left: -10px; top: 50%; transform: translateY(-50%);
+            width: 7px; height: 7px; background-color: var(--vscode-blue); border-radius: 50%; box-shadow: 0 0 5px var(--vscode-blue);
         }
 
         .terminal-panel { height: 220px; background: var(--bg-terminal); border-top: 1px solid var(--border); display: flex; flex-direction: column; }
@@ -144,7 +143,6 @@
                 <div class="tree-item"><span style="color:#ffffff">⌄</span> src</div>
                 <div class="tree-item active" style="padding-left:30px;"><span style="color:#cbcb41">{}</span> word_matrix.json</div>
                 <div class="tree-item" style="padding-left:30px;">📄 hardware.ts</div>
-                <div class="tree-item">📄 package.json</div>
             </div>
             <div class="sidebar-header">Source Control</div>
             <div class="file-tree staging-area" id="stagingArea"></div>
@@ -226,7 +224,7 @@
             const staging = document.getElementById('stagingArea'); staging.innerHTML = '';
             pendingClues.forEach((c, index) => {
                 const item = document.createElement('div');
-                item.className = 'tree-item pending-file';
+                item.className = 'tree-item';
                 item.innerHTML = `M <span style="color:#ce9178; font-weight:bold; margin-left:5px;">${c.text.toUpperCase()}</span> (${c.num})`;
                 item.onclick = () => { document.getElementById('clueText').value = c.text; document.getElementById('clueNum').value = c.num; };
                 item.oncontextmenu = (e) => { e.preventDefault(); pendingClues.splice(index, 1); savePending(); };
@@ -264,6 +262,7 @@
             const shuffled = bank.sort(() => 0.5 - Math.random()).slice(0, 25);
             const roles = Array(25).fill(null).map(() => ({ a: 'neutral', b: 'neutral' }));
             const idx = [...Array(25).keys()].sort(() => 0.5 - Math.random());
+            
             idx.slice(0, 3).forEach(i => { roles[i].a='green'; roles[i].b='green'; });
             idx.slice(3, 9).forEach(i => roles[i].a='green');
             idx.slice(9, 15).forEach(i => roles[i].b='green');
@@ -272,6 +271,7 @@
             roles[idx[17]].a = 'black'; roles[idx[17]].b = 'neutral';
             roles[idx[18]].b = 'black'; roles[idx[18]].a = 'green';
             roles[idx[19]].b = 'black'; roles[idx[19]].a = 'neutral';
+
             const boardData = shuffled.map((w, i) => ({ word: w.word, role_a_view: roles[i].a, role_b_view: roles[i].b, status_a: 'neutral', status_b: 'neutral', is_guessed: false }));
             await mySupabase.from('game_state').delete().neq('id', 0);
             await mySupabase.from('game_state').insert(boardData);
@@ -310,19 +310,19 @@
                 row.className = 'word-row';
                 if(item.is_guessed) row.classList.add('guessed');
                 
-                const idStr = (i + 1).toString().padStart(2, '0');
-                row.innerHTML = `<span class="key">"node_${idStr}"</span>: <span class="val">"${item.word}"</span>,`;
-                
                 const statusMe = (myRole === 'A') ? item.status_a : item.status_b;
-                if(item.status_a === 'assassin' || item.status_b === 'assassin') row.classList.add('assassin');
-                else if(item.status_a === 'agent' || item.status_b === 'agent') row.classList.add('agent');
+                if(statusMe !== 'neutral') row.classList.add('revealed');
+                if(statusMe === 'agent' || (item.status_a === 'agent' || item.status_b === 'agent')) row.classList.add('agent');
+                else if(statusMe === 'assassin' || (item.status_a === 'assassin' || item.status_b === 'assassin')) row.classList.add('assassin');
                 else if(statusMe === 'civil') row.classList.add('civil');
 
                 const viewMe = (myRole === 'A') ? item.role_a_view : item.role_b_view;
-                if(!row.classList.contains('agent') && !row.classList.contains('assassin')){
+                if(!row.classList.contains('agent') && !row.classList.contains('assassin') && !row.classList.contains('civil')){
                     if(viewMe === 'green') row.classList.add('hint-green');
                     if(viewMe === 'black') row.classList.add('hint-black');
                 }
+                
+                row.innerHTML = `<span class="key">"node_${(i+1).toString().padStart(2, '0')}"</span>: <span class="val">"${item.word}"</span>,`;
                 
                 row.onclick = async () => {
                     const otherView = (myRole === 'A') ? item.role_b_view : item.role_a_view;
@@ -338,7 +338,7 @@
 
                 row.oncontextmenu = async (e) => {
                     e.preventDefault();
-                    if(!row.classList.contains('agent') && !row.classList.contains('assassin') && !row.classList.contains('civil')) {
+                    if(!row.classList.contains('revealed')) {
                         await mySupabase.from('game_state').update({ is_guessed: !item.is_guessed }).eq('id', item.id);
                     }
                 };
