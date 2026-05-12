@@ -94,7 +94,7 @@
         .terminal-actions-right { margin-left: auto; display: flex; gap: 15px; align-items: center; }
         .terminal-actions-right svg { width: 14px; height: 14px; color: #858585; cursor: pointer; }
         .terminal-actions-right svg:hover { color: #fff; }
-        
+
         .terminal-content { flex-grow: 1; padding: 12px 20px; overflow-y: auto; font-family: 'Consolas', monospace; font-size: 12px; color: #cccccc; }
         .term-prompt { color: #6a9955; font-weight: bold; }
 
@@ -165,6 +165,7 @@
                         // --- EMBEDDED SYSTEM KERNEL DRIVERS ---<br>
                         <span style="color:var(--syntax-keyword)">async function</span> <span style="color:var(--syntax-key)">initBusProtocol</span>() {<br>
                         &nbsp;&nbsp;const i2c = new I2C_Controller({ freq: <span style="color:var(--syntax-string)">400000</span> });<br>
+                        &nbsp;&nbsp;await i2c.handshake(<span style="color:var(--syntax-string)">0x3F</span>);<br>
                         &nbsp;&nbsp;return i2c.status === 'READY';<br>
                         }<br>
                         <div style="height: 600px;"></div>
@@ -267,11 +268,11 @@
             const roles = Array(25).fill(null).map(() => ({ a: 'neutral', b: 'neutral' }));
             const idx = [...Array(25).keys()].sort(() => 0.5 - Math.random());
             
-            // 3 Verts communs
+            // 3 Verts communs (comptent pour 1 carte physique)
             idx.slice(0, 3).forEach(i => { roles[i].a='green'; roles[i].b='green'; });
-            // 6 Verts pour A
+            // 6 Verts uniques pour A
             idx.slice(3, 9).forEach(i => roles[i].a='green');
-            // 6 Verts pour B
+            // 6 Verts uniques pour B
             idx.slice(9, 15).forEach(i => roles[i].b='green');
             
             // Assassins Duel
@@ -298,17 +299,15 @@
 
             const isGameOver = words.some(w => w.status_a === 'assassin' || w.status_b === 'assassin');
             
-            // Compteur de mots verts restant à trouver (départ à 15)
-            // On compte les agents uniques révélés. Le commun compte pour 1 carte physique.
-            const uniqueAgentsFound = words.filter(w => w.status_a === 'agent' || w.status_b === 'agent').length;
-            const greensRemaining = Math.max(0, 15 - uniqueAgentsFound);
+            // Compteur physique des cartes vertes révélées (sur 15 total)
+            const physicalGreensFound = words.filter(w => w.status_a === 'agent' || w.status_b === 'agent').length;
+            const greensRemaining = Math.max(0, 15 - physicalGreensFound);
             document.getElementById('greenCounter').innerText = greensRemaining;
 
+            // Règle des 9 mots par joueur pour passage de tour
             const myGreensFound = (myRole === 'A') ? ctrl.greens_found_a : ctrl.greens_found_b;
             const iAmDone = myGreensFound >= 9;
-            const partnerGreensFound = (myRole === 'A') ? ctrl.greens_found_b : ctrl.greens_found_a;
-            const partnerDone = partnerGreensFound >= 9;
-            const allFound = (uniqueAgentsFound >= 15);
+            const allFound = (physicalGreensFound >= 15);
 
             if (iAmDone && ctrl.current_turn === myRole && !allFound) {
                 await mySupabase.from('game_control').update({ current_turn: (myRole === 'A' ? 'B' : 'A') }).eq('id', 1);
@@ -320,7 +319,7 @@
             
             document.getElementById('tokenCounter').innerText = remainingTokens;
             document.getElementById('newGameBtn').style.display = (isGameOver || allFound) ? 'block' : 'none';
-            document.getElementById('turnIndicator').innerText = isGameOver ? "ERR_CRITICAL" : (allFound ? "MISSION_SUCCESS_VICTORY" : (isSuddenDeath ? "SUDDEN_DEATH" : (iAmDone ? "WAITING_PARTNER" : `LINE: ROLE_${ctrl.current_turn}_ACTIVE`)));
+            document.getElementById('turnIndicator').innerText = isGameOver ? "ERR_CRITICAL" : (allFound ? "SUCCESS_MISSION_VICTOIRE" : (isSuddenDeath ? "SUDDEN_DEATH" : (iAmDone ? "FINISHED_WAITING" : `LINE: ROLE_${ctrl.current_turn}_ACTIVE`)));
             document.getElementById('statusBar').style.background = isGameOver ? "#e81123" : (allFound ? "#28a745" : (isSuddenDeath ? "#d1a000" : "#007acc"));
 
             const board = document.getElementById('board');
