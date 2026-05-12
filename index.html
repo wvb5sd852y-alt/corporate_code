@@ -296,7 +296,6 @@
             document.getElementById('turnIndicator').innerText = isGameOver ? "ERR_CRITICAL" : (allFound ? "SUCCESS" : `LINE: ROLE_${ctrl.current_turn}_ACTIVE`);
             document.getElementById('statusBar').style.background = isGameOver ? "#e81123" : "#007acc";
 
-            // COMPTEUR DE JETONS (15 - nombre de mots blancs/passés)
             const whitesCount = words.filter(w => w.status_a === 'civil' || w.status_b === 'civil').length;
             document.getElementById('tokenCounter').innerText = 15 - whitesCount;
 
@@ -338,7 +337,21 @@
                 board.appendChild(row);
             });
             const hist = document.getElementById('clueHistory');
-            hist.innerHTML = hints ? hints.map(h => `<div class="history-log">// [${h.sent_by}] clue: "${h.clue_text}" (${h.clue_number})${h.revealed_words ? ' -> found: ' + h.revealed_words : ''}</div>`).join('') : '';
+            hist.innerHTML = hints ? hints.map(h => {
+                let revealedStr = '';
+                if(h.revealed_words) {
+                    revealedStr = ' -> found: ';
+                    revealedStr += h.revealed_words.split(',').map(pair => {
+                        const [word, color] = pair.split(':');
+                        let style = '';
+                        if(color === 'agent') style = 'color:var(--syntax-comment); font-style:italic;';
+                        if(color === 'assassin') style = 'color:#f44747; font-weight:bold;';
+                        if(color === 'civil') style = 'opacity:0.3; text-decoration:line-through;';
+                        return `<span style="${style}">${word}</span>`;
+                    }).join(', ');
+                }
+                return `<div class="history-log">// [${h.sent_by}] clue: "${h.clue_text}" (${h.clue_number})${revealedStr}</div>`;
+            }).join('') : '';
             hist.scrollTop = hist.scrollHeight;
         }
 
