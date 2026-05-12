@@ -265,44 +265,20 @@
             localStorage.removeItem('pending_clues');
             const { data: bank } = await mySupabase.from('word_bank').select('word');
             const shuffledWords = bank.sort(() => 0.5 - Math.random()).slice(0, 25);
-            
-            // CRÉATION DU LAYOUT STRICT (25 cases)
             const layout = Array(25).fill(null).map(() => ({ a: 'neutral', b: 'neutral' }));
-            
-            // 1. 3 COMMUNS (Slots 0,1,2) -> A:3, B:3
             for(let i=0; i<3; i++) { layout[i].a = 'green'; layout[i].b = 'green'; }
-            
-            // 2. 5 UNIQUES pour A (Slots 3-7) -> A:3+5=8, B:3
             for(let i=3; i<8; i++) { layout[i].a = 'green'; }
-            
-            // 3. 5 UNIQUES pour B (Slots 8-12) -> A:8, B:3+5=8
             for(let i=8; i<13; i++) { layout[i].b = 'green'; }
-            
-            // 4. LES 2 IMPOSTEURS (Slots 13, 14) -> A:8+1=9, B:8+1=9
-            layout[13].a = 'green'; layout[13].b = 'black'; // Vert pour A, Assassin pour B
-            layout[14].b = 'green'; layout[14].a = 'black'; // Vert pour B, Assassin pour A
-            
-            // 5. LES ASSASSINS PURS (Slots 15, 16)
-            layout[15].a = 'black'; layout[15].b = 'black'; // Double Noir
-            layout[16].a = 'black'; layout[16].b = 'neutral'; // Noir simple pour A
-            // Slot 17 déjà géré par l'imposteur A, Slot 18 déjà géré par l'imposteur B
-            layout[17].b = 'black'; layout[17].a = 'neutral'; // Noir simple pour B
-
-            // MÉLANGE FISHER-YATES
+            layout[13].a = 'green'; layout[13].b = 'black';
+            layout[14].b = 'green'; layout[14].a = 'black';
+            layout[15].a = 'black'; layout[15].b = 'black';
+            layout[16].a = 'black'; layout[16].b = 'neutral';
+            layout[17].b = 'black'; layout[17].a = 'neutral';
             for (let i = layout.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
                 [layout[i], layout[j]] = [layout[j], layout[i]];
             }
-
-            const boardData = shuffledWords.map((w, i) => ({ 
-                word: w.word, 
-                role_a_view: layout[i].a, 
-                role_b_view: layout[i].b, 
-                status_a: 'neutral', 
-                status_b: 'neutral', 
-                is_guessed: false 
-            }));
-
+            const boardData = shuffledWords.map((w, i) => ({ word: w.word, role_a_view: layout[i].a, role_b_view: layout[i].b, status_a: 'neutral', status_b: 'neutral', is_guessed: false }));
             await mySupabase.from('game_state').delete().neq('id', 0);
             await mySupabase.from('game_state').insert(boardData);
             await mySupabase.from('game_hints').delete().neq('id', 0);
@@ -322,12 +298,15 @@
             const greensRemaining = Math.max(0, 15 - physicalGreensFound);
             document.getElementById('greenCounter').innerText = greensRemaining;
 
+            // VÉRIFICATION CORRIGÉE À 9 MOTS
             const myGreensFound = (myRole === 'A') ? ctrl.greens_found_a : ctrl.greens_found_b;
             const iAmDone = myGreensFound >= 9;
             const allFound = (physicalGreensFound >= 15);
 
-            if (iAmDone && ctrl.current_turn === myRole && !allFound) {
-                await mySupabase.from('game_control').update({ current_turn: (myRole === 'A' ? 'B' : 'A') }).eq('id', 1);
+            // PASSAGE DE TOUR AUTO CORRIGÉ
+            if (iAmDone && ctrl.current_turn === myRole && !allFound && !isGameOver) {
+                const next = (myRole === 'A' ? 'B' : 'A');
+                await mySupabase.from('game_control').update({ current_turn: next }).eq('id', 1);
             }
 
             const remainingTokens = ctrl.tokens_left;
@@ -350,21 +329,17 @@
                 const row = document.createElement('div');
                 row.className = 'word-row';
                 if(item.is_guessed) row.classList.add('guessed');
-                
                 const statusA = item.status_a; const statusB = item.status_b;
                 if(statusA !== 'neutral' || statusB !== 'neutral') row.classList.add('revealed');
                 if(statusA === 'agent' || statusB === 'agent') row.classList.add('agent');
                 else if(statusA === 'assassin' || statusB === 'assassin') row.classList.add('assassin');
                 else if(statusA === 'civil' || statusB === 'civil') row.classList.add('civil');
-
                 const viewMe = (myRole === 'A') ? item.role_a_view : item.role_b_view;
                 if(!row.classList.contains('revealed')){
                     if(viewMe === 'green') row.classList.add('hint-green');
                     if(viewMe === 'black') row.classList.add('hint-black');
                 }
-                
                 row.innerHTML = `<span class="key">"node_${(i+1).toString().padStart(2, '0')}"</span>: <span class="val">"${item.word}"</span>,`;
-                
                 row.onclick = async () => {
                     const otherView = (myRole === 'A') ? item.role_b_view : item.role_a_view;
                     let res = otherView === 'green' ? 'agent' : (otherView === 'black' ? 'assassin' : 'civil');
@@ -373,7 +348,6 @@
                         const upd = last.revealed_words ? (last.revealed_words + ',' + item.word + ':' + res) : (item.word + ':' + res);
                         await mySupabase.from('game_hints').update({ revealed_words: upd }).eq('id', last.id);
                     }
-                    
                     if(res === 'agent') {
                         let updObj = {};
                         if(item.role_a_view === 'green' && item.role_b_view === 'green') {
@@ -384,11 +358,9 @@
                         }
                         await mySupabase.from('game_control').update(updObj).eq('id', 1);
                     }
-
                     await mySupabase.from('game_state').update((myRole === 'A') ? {status_a: res, is_guessed: false} : {status_b: res, is_guessed: false}).eq('id', item.id);
                     if(res === 'civil' && !isSuddenDeath) document.getElementById('endTurnBtn').click();
                 };
-
                 row.oncontextmenu = async (e) => {
                     e.preventDefault();
                     if(!row.classList.contains('revealed')) {
