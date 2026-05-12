@@ -208,7 +208,7 @@
             <div class="status-btn"><svg viewBox="0 0 16 16" fill="currentColor" width="14"><path d="M8 2a6 6 0 1 0 0 12A6 6 0 0 0 8 2zM1 8a7 7 0 1 1 14 0A7 7 0 0 1 1 8z"/><path d="M7 10h2v1H7v-1zm0-6h2v5H7V4z"/></svg><span>master*</span></div>
             <div style="display: flex; align-items: center; gap: 8px; margin: 0 10px; opacity: 0.8;">
                 <span><svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><path d="M7.938 2.016A.13.13 0 0 1 8.002 2a.13.13 0 0 1 .063.016.146.13 0 0 1 .054.057l6.857 11.667c.036.06.035.124.002.183a.163.163 0 0 1-.054.06.116.116 0 0 1-.066.017H1.146a.115.116 0 0 1-.066-.017.163.163 0 0 1-.054-.06.176.176 0 0 1 .002-.183L7.884 2.073a.147.147 0 0 1 .054-.057zm1.044-.454a1.15 1.15 0 0 0-1.964 0L.154 13.227a1.173 1.173 0 0 0 1.003 1.773h13.686a1.173 1.173 0 0 0 1.003-1.773L8.982 1.562z"/></svg> 0</span>
-                <span><svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><path d="M14.778.085A.5.5 0 0 1 15 .5V8a.5.5 0 0 1-.314.464L14.5 8.5l-.186-.036A.5.5 0 0 1 14 8V.5a.5.5 0 0 1 .778-.415z"/></svg> 0</span>
+                <span><svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><path d="M14.778.085A.5.5 0 0 1 15 .5V8a.5.5 0 0 1-.314.464L14.5 8.5l-.186-.036A.5.5 0 0 1 14 8V.5a.5.5 0 0 1 .778-.415zM14.5 12a1 1 0 1 1 0-2 1 1 0 0 1 0 2zM.5 15a.5.5 0 0 1-.464-.314l-.036-.186A.5.5 0 0 1 0 14V.5a.5.5 0 0 1 .5-.5h7.5a.5.5 0 0 1 .464.314l.036.186A.5.5 0 0 1 8 1v13.5a.5.5 0 0 1-.5.5H.5z"/></svg> 0</span>
             </div>
             <button id="queueClueBtn" class="status-btn"><svg viewBox="0 0 16 16" fill="currentColor" width="14"><path d="M8 4.5l-4 4h3V12h2V8.5h3l-4-4zM2 14v-1h12v1H2z"/></svg></button>
             <button id="sendClueBtn" class="status-btn"><svg viewBox="0 0 16 16" fill="currentColor" width="14"><path d="M11.5 8l-4-4v3H3v2h4.5v3l4-4zM14 2v12h-1V2h1z"/></svg></button>
@@ -265,6 +265,7 @@
         };
 
         async function startNewGame() {
+            localStorage.removeItem('pending_clues'); // BUG FIX: Effacer Source Control
             const { data: bank } = await mySupabase.from('word_bank').select('word');
             const shuffled = bank.sort(() => 0.5 - Math.random()).slice(0, 25);
             const roles = Array(25).fill(null).map(() => ({ a: 'neutral', b: 'neutral' }));
